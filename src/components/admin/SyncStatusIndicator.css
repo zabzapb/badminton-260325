@@ -1,0 +1,68 @@
+/**
+ * Sync Monitor Styling
+ */
+
+.sync-monitor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid #e5e5ea;
+    padding: 6px 12px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, background 0.2s;
+    user-select: none;
+    cursor: default;
+}
+
+.sync-monitor:hover {
+    background: #fdfdfd;
+}
+
+.sync-monitor__icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.sync-monitor__icon {
+    animation: spin 3s linear infinite;
+    z-index: 2;
+}
+
+.sync-monitor__pulse {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 149, 0, 0.15);
+    border-radius: 50%;
+    z-index: 1;
+    animation: ripple 1.5s ease-out infinite;
+    left: -3px; 
+    top: -3px;
+}
+
+.sync-monitor__count {
+    font-size: 13px;
+    font-weight: 800;
+    color: #ff9500;
+}
+
+.sync-monitor__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8e8e93;
+    letter-spacing: 0.05em;
+}
+
+/* Animations */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(-360deg); }
+}
+
+@keyframes ripple {
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(3.5); opacity: 0; }
+}

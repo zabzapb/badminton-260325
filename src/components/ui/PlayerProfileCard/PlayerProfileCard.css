@@ -1,0 +1,402 @@
+/* ─────────────────────────────────────────────
+   PlayerProfileCard - 재설계
+   참고: 프로필 히어로 카드 스타일
+───────────────────────────────────────────── */
+
+.player-profile-card {
+    background: transparent;
+    /* 카드의 배경을 없애고 뒤의 회색 배경에 스며들도록 함 */
+    border-radius: var(--radius-xl);
+    border: none;
+    /* 테두리 삭제 */
+    box-shadow: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+
+/* ── 히어로 영역 (아바타 + 이름) ── */
+.player-profile-card__hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--sp-8) 0 var(--sp-5);
+    /* 상단하단만 패딩, 좌우는 부모(dashboard-body)의 20px에 맞춤 */
+    gap: var(--sp-3);
+    /* 12px */
+    position: relative;
+}
+
+/* 배경 그라디언트 효과 (라이트 테마에 맞게 제거 또는 연하게 변경) */
+.player-profile-card__hero::before {
+    content: none;
+}
+
+/* ── 원형 아바타 컨테이너 ── */
+.player-profile-card__avatar-container {
+    position: relative;
+    width: 120px;
+    /* 120px 규모로 확대 */
+    height: 120px;
+}
+
+.player-profile-card__avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: #F2F2F2;
+    border: 1px solid #C7C7CC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    /* 확대된 크기에 맞춰 폰트 사이즈 조정 */
+    font-weight: var(--fw-bold);
+    color: #000;
+    overflow: hidden;
+}
+
+.player-profile-card__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 아바타 우측 하단 매니저 배지 */
+.player-profile-card__avatar-manager-badge {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 32px;
+    height: 32px;
+    background-color: #FF6B3D;
+    /* 지정 오렌지 칼라 */
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    z-index: 2;
+}
+
+.player-profile-card__avatar-manager-badge.master-badge {
+    background-color: #000080 !important;
+    border-color: #ffffff !important;
+}
+
+/* ── 이름 | 닉네임 | 전화번호 영역 ── */
+.player-profile-card__identity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-1);
+    /* 4px */
+}
+
+.player-profile-card__main-info-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    justify-content: center;
+}
+
+.player-profile-card__main-info-row .info-text {
+    font-size: 18px;
+    font-weight: 200;
+    color: #000;
+    letter-spacing: -0.02em;
+}
+
+.info-sep {
+    color: #C7C7CC;
+    font-weight: 200;
+    margin: 0 4px;
+}
+
+.player-profile-phone-link,
+.player-profile-phone-link:visited,
+.player-profile-phone-link:active {
+    color: inherit;
+    text-decoration: none;
+    cursor: default;
+    /* 마우스 오버 시에도 일반 텍스트 느낌 유지 (클릭은 가능) */
+}
+
+.player-profile-phone-link:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* 네이버 인증 로고 */
+.player-profile-card__naver-logo {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    border-radius: var(--radius-full);
+}
+
+.player-profile-card__naver-logo--modified {
+    filter: grayscale(100%) brightness(0.8) contrast(20);
+}
+
+.master-tag,
+.manager-tag,
+.guest-tag,
+.player-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    vertical-align: middle;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-right: 8px;
+}
+
+.master-tag {
+    border: 1.5px solid #000080;
+    color: #000080;
+    background: rgba(0, 0, 128, 0.05);
+}
+
+.manager-tag {
+    border: 1.5px solid #FF6B3D;
+    color: #FF6B3D;
+    background: rgba(255, 107, 61, 0.05);
+}
+
+.guest-tag {
+    border: 1.5px solid #8E8E93;
+    color: #8E8E93;
+    background: rgba(142, 142, 147, 0.05);
+}
+
+.player-tag {
+    border: 1.5px solid #34C759;
+    color: #34C759;
+    background: rgba(52, 199, 89, 0.05);
+}
+
+.player-profile-card__avatar-manager-badge.guest-badge {
+    background-color: #8E8E93 !important;
+    border-color: #ffffff !important;
+}
+
+.player-profile-card__avatar-container.is-clickable:hover .player-profile-card__avatar {
+    border-color: #000;
+}
+
+/* 소속 정보 */
+.player-profile-card__club-info {
+    font-size: 13px;
+    color: #8E8E93;
+    font-weight: 300;
+}
+
+/* ── 구분선 ── */
+.player-profile-card__divider {
+    display: none;
+}
+
+/* ── 통계 행 (나이 | 급수 | 티셔츠) ── */
+.player-profile-card__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    /* 3개에서 4개로 확장 */
+    padding: var(--sp-5) 0;
+    /* 좌우 패딩 제거하여 전체 20px 라인에 맞춤 */
+}
+
+.player-profile-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-1);
+    /* 4px */
+    padding: 0 var(--sp-2);
+    position: relative;
+}
+
+/* 세로 구분선 */
+.player-profile-stat:not(:last-child)::after {
+    display: none;
+}
+
+.player-profile-stat__value {
+    font-size: 32px;
+    /* 20px * 1.6 = 32px */
+    font-weight: var(--fw-semibold);
+    /* bold에서 한단계 낮춤 */
+    color: #000;
+    letter-spacing: -0.01em;
+    line-height: 1;
+}
+
+.player-profile-stat__label {
+    font-size: var(--text-caption);
+    /* 12px */
+    font-weight: var(--fw-light);
+    color: #8E8E93;
+    text-align: center;
+}
+
+/* ── 수정 버튼 ── */
+.player-profile-card__edit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    padding: var(--sp-3) var(--sp-5);
+    /* 12px 20px */
+    margin: 0 var(--sp-5) var(--sp-5);
+    /* 0 20px 20px */
+    border-radius: var(--radius-md);
+    background: transparent;
+    border: 1px solid #C7C7CC;
+    color: #000;
+    font-size: var(--text-body);
+    font-weight: var(--fw-medium);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.player-profile-card__edit-btn:hover {
+    background: #F2F2F2;
+    border-color: #000;
+    color: #000;
+}
+
+.player-profile-card__edit-btn:active {
+    opacity: 0.7;
+}
+
+/* ─────────────────────────────────────────────
+   Mini Variant - 가로형 미니 카드 (Grid 재설계)
+───────────────────────────────────────────── */
+
+.player-profile-card--mini {
+    display: grid !important;
+    grid-template-areas:
+        "avatar identity"
+        "avatar stats";
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: var(--sp-6);
+    row-gap: 2px;
+    padding: var(--sp-5);
+    background: #1C1C1E; /* Black background from image */
+    border-radius: var(--radius-lg);
+    margin: 0;
+}
+
+.player-profile-card--mini .player-profile-card__hero {
+    display: contents; /* Grid Direct Children */
+}
+
+.player-profile-card--mini .player-profile-card__avatar-container {
+    grid-area: avatar;
+    width: 64px;
+    height: 64px;
+    margin: 0;
+}
+
+.player-profile-card--mini .player-profile-card__avatar {
+    font-size: 24px;
+}
+
+.player-profile-card--mini .player-profile-card__identity {
+    grid-area: identity;
+    align-items: flex-start;
+    gap: 0;
+}
+
+.player-profile-card--mini .player-profile-card__main-info-row {
+    justify-content: flex-start;
+    gap: var(--sp-2);
+}
+
+.player-profile-card--mini .player-profile-card__main-info-row .info-text {
+    font-size: 16px;
+    font-weight: 500;
+    white-space: nowrap; /* 한 줄로 유지 */
+    display: flex;
+    align-items: center;
+    color: #fff;
+}
+.player-profile-card--mini .player-profile-card__club-info {
+    display: none; /* 2줄 구조를 위해 mini에서는 숨김 */
+}
+
+.player-profile-card--mini .player-profile-card__stats {
+    grid-area: stats;
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    margin-top: 4px;
+    gap: var(--sp-4);
+}
+
+.player-profile-card--mini .player-profile-stat {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 2px;
+    padding: 0;
+}
+
+.player-profile-card--mini .player-profile-stat::after {
+    content: none;
+}
+
+.player-profile-card--mini .player-profile-stat__value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.player-profile-card--mini .player-profile-stat__label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+}
+
+/* Edit/Delete button adjustments in mini */
+.player-profile-card--mini .player-profile-card__edit-btn {
+    display: none;
+}
+
+.player-profile-card--mini .btn-delete-profile {
+    top: 12px !important;
+    right: 12px !important;
+    width: 32px !important;
+    height: 32px !important;
+}
+
+.player-profile-card--mini .player-profile-card__divider {
+    display: none;
+}
+/*  Light Theme for Mini  */
+.player-profile-card--mini.light { background: transparent !important; }
+.player-profile-card--mini.light .info-text { color: #000 !important; }
+.player-profile-card--mini.light .player-profile-stat__value { color: #000 !important; }
+.player-profile-card--mini.light .player-profile-stat__label { color: rgba(0,0,0,0.5) !important; }
+.player-profile-card--mini.light .info-sep { color: rgba(0,0,0,0.1) !important; }
+
+/* ── Pending State Overrides (Force Gray) ── */
+.player-profile-card.is-pending .info-text,
+.player-profile-card.is-pending .info-text span,
+.player-profile-card.is-pending .info-sep,
+.player-profile-card.is-pending .player-profile-phone-link,
+.player-profile-card.is-pending a.phone-number-field,
+.player-profile-card.is-pending .player-profile-card__club-info,
+.player-profile-card.is-pending .player-profile-stat__value,
+.player-profile-card.is-pending .player-profile-stat__label {
+    color: #8E8E93 !important;
+}
+
+.player-profile-card.is-pending .player-profile-card__naver-logo {
+    filter: grayscale(100%) opacity(0.5) !important;
+}
+

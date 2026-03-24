@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <!-- HANCOCK TWOCOCK - 상단 소문자 영문 -->
+  <text
+    x="200"
+    y="30"
+    font-family="'Pretendard Variable', Pretendard, Arial Black, sans-serif"
+    font-size="14"
+    font-weight="800"
+    letter-spacing="6"
+    text-anchor="middle"
+    fill="white"
+  >HANCOCK TWOCOCK</text>
+
+  <!-- 한콕두콕 - 메인 굵은 한글 -->
+  <text
+    x="200"
+    y="100"
+    font-family="'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+    font-size="76"
+    font-weight="900"
+    letter-spacing="-2"
+    text-anchor="middle"
+    fill="white"
+    transform="skewX(-4)"
+  >한콕두콕</text>
+</svg>

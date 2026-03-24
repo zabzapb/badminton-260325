@@ -1,0 +1,85 @@
+.bottom-sheet-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(8px);
+    transition: opacity 0.3s ease;
+}
+
+.bottom-sheet-content {
+    background: #FFFFFF;
+    width: 94%;
+    max-width: 520px;
+    border-radius: 24px 24px 0 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-shadow: 0 -8px 48px rgba(0, 0, 0, 0.15);
+    animation: bottomSheetSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.bottom-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+}
+
+.bottom-sheet-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1C1C1E;
+}
+
+.bottom-sheet-close {
+    background: #F2F2F7;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #8E8E93;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 100;
+}
+
+.bottom-sheet-close:hover {
+    background: #E5E5EA;
+    color: #1C1C1E;
+}
+
+.bottom-sheet-body {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #3A3A3C;
+}
+
+.bottom-sheet-drag-handle {
+    width: 36px;
+    height: 4px;
+    background: #E5E5EA;
+    border-radius: 2px;
+    margin: -8px auto 16px auto;
+}
+
+@keyframes bottomSheetSlideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}

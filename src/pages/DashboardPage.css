@@ -1,0 +1,93 @@
+/* Dashboard Page (Premium Banking UI) */
+
+/* Page Heading Title */
+.dashboard-heading {
+    margin: var(--sp-4) 0 var(--sp-8);
+}
+
+.dashboard-heading__title {
+    font-size: var(--text-h3);
+    font-weight: var(--fw-bold);
+    color: #000;
+    line-height: 1.3;
+}
+
+/* Generic Section Header */
+.section-header {
+    margin-top: 30px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.section-header__title {
+    font-size: var(--text-title);
+    font-weight: var(--fw-bold);
+    color: #1C1C1E;
+}
+
+.section-header__count {
+    font-size: var(--text-caption);
+    font-weight: var(--fw-medium);
+    color: #1C1C1E;
+    opacity: 0.6;
+}
+
+/* Summary Banner (Stats Row) */
+.summary-banner {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: #ffffff;
+    border: 1px solid #C7C7CC;
+    border-radius: var(--radius-lg);
+    padding: var(--sp-5);
+    margin-bottom: var(--sp-8);
+}
+
+.summary-banner__item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-1);
+}
+
+.summary-banner__num {
+    font-size: var(--text-h3);
+    font-weight: var(--fw-bold);
+    color: #000;
+}
+
+.summary-banner__label {
+    font-size: var(--text-tiny);
+    font-weight: var(--fw-medium);
+    color: #8E8E93;
+    text-transform: uppercase;
+}
+
+/* Tournament List */
+.tournament-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-top: 50px;
+}
+
+/* Empty State */
+.empty-state {
+    padding: var(--sp-16) var(--sp-5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: transparent;
+    border: 1px dashed #C7C7CC;
+    border-radius: var(--radius-lg);
+}
+
+.empty-state__title {
+    margin-top: var(--sp-4);
+    font-size: var(--text-body);
+    font-weight: var(--fw-semibold);
+    color: #8E8E93;
+}

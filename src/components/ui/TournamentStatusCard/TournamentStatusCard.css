@@ -1,0 +1,198 @@
+/* ─────────────────────────────────────────────
+   TournamentStatusCard - 프리미엄 슬림 재설계
+───────────────────────────────────────────── */
+
+.tournament-status-card {
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+    padding: 38px 24px 80px;
+    margin: 0 0px;
+    color: #000;
+    border: none;
+    min-height: 120px;
+}
+
+.tournament-status-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+
+.tournament-status-card__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+}
+
+.tournament-status-card__info-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.tournament-status-card__name {
+    font-size: 18px;
+    font-weight: var(--fw-bold);
+    color: #000;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.tournament-status-card__sub-info {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    font-size: 14px;
+    font-weight: var(--fw-medium);
+    color: rgba(0, 0, 0, 0.7);
+    margin-top: var(--sp-2);
+}
+
+.tournament-status-card__stats {
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+}
+
+.tournament-status-card__entry-container {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.tournament-status-card__entry-summary {
+    font-size: 20px;
+    /* 요청하신 20px 크기 적용 */
+    font-weight: 900;
+    /* 요청하신 900(Bold) 두께 적용 */
+    color: #000;
+    letter-spacing: -0.01em;
+    line-height: 1;
+}
+
+.tournament-status-card__entry-details {
+    font-size: 14px;
+    font-weight: var(--fw-light);
+    color: rgba(0, 0, 0, 0.6);
+    margin-top: 4px;
+}
+
+.detail-sep {
+    opacity: 0.3;
+    padding: 0 2px;
+}
+
+.tournament-status-card__sub-info span {
+    white-space: nowrap;
+}
+
+/* .info-venue::before {
+    content: "";
+    display: inline-block;
+    width: 1px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    margin-right: var(--sp-2);
+    vertical-align: middle;
+} */
+
+/* ── 우측 액션 영역 ── */
+.tournament-status-card__side-action {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* 플레이어 아바타 중첩 */
+.player-avatars-overlap {
+    display: flex;
+    align-items: center;
+}
+
+.avatar-circle {
+    width: 40px;
+    /* 32px에서 약 120% 이상 확대 (40px) */
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid #fff;
+    /* 배경색에 관계없이 구분되도록 화이트 보더 */
+    overflow: hidden;
+    background: #ccc;
+    margin-left: -10px;
+    /* 40px * 0.25 (약 25%) 중첩 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-circle:first-child {
+    margin-left: 0;
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 상태 텍스트 라벨 */
+.status-text-label {
+    font-size: 14px;
+    font-weight: var(--fw-bold);
+    color: rgba(0, 0, 0, 0.9);
+    letter-spacing: -0.02em;
+}
+
+.status-open-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #1C1C1E;
+}
+
+.label-open-dday {
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.label-open-date {
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.6;
+}
+
+.label-open {
+    color: rgba(0, 0, 0, 0.8);
+}
+
+.label-closed {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.label-registered {
+    color: var(--color-status-success);
+}
+
+/* 상태별 모디파이어 (필요 시 특수 스타일) */
+.tournament-status-card--closed {
+    opacity: 0.7;
+}
+
+.tournament-status-card--manage {
+    padding: 24px 24px;
+    min-height: auto;
+    border: 0.5px solid rgba(0, 0, 0, 0.5) !important;
+}
+
+.tournament-status-card--player {
+    padding: 24px;
+    min-height: auto;
+    transition: all 0.2s ease;
+}
+
+/* 신청 후일 때 스타일 (이미지 참고) */
+.tournament-status-card--player.is-joined {
+    padding: 20px 24px;
+}

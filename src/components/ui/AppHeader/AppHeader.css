@@ -1,0 +1,106 @@
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 96px;
+    padding: 0 var(--sp-5);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.app-header__logo {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.app-header__logo-img {
+    height: 24px;
+    width: auto;
+    filter: brightness(0) invert(1);
+    display: block;
+}
+
+.app-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+}
+
+.btn-more {
+    color: #fff;
+    padding: var(--sp-1);
+    display: flex;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* ── Menu Overlay ── */
+.app-header-menu {
+    position: fixed;
+    top: 96px;
+    /* Exactly under the header */
+    left: 0;
+    right: 0;
+    max-height: 0;
+    overflow: hidden;
+    background-color: var(--color-bg);
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 150;
+    border-bottom: 0 solid rgba(255, 255, 255, 0.1);
+}
+
+.app-header-menu.is-open {
+    max-height: 300px;
+    /* Sufficient height for 48px items + gaps */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.app-header-menu__content {
+    padding: 12px var(--sp-5) 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* Align right */
+    gap: var(--sp-3);
+    /* 12px gap between items */
+}
+
+.app-header-menu__item {
+    display: flex;
+    flex-direction: row-reverse;
+    /* Icon on the right of text */
+    align-items: center;
+    justify-content: flex-start;
+    height: 48px;
+    /* Each item height is 48px */
+    gap: var(--sp-3);
+    /* 12px gap between text and icon */
+    padding: 0;
+    color: var(--color-text-primary);
+    font-size: 16px;
+    font-weight: var(--fw-medium);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: right;
+    width: auto;
+}
+
+.app-header-menu__item:active {
+    opacity: 0.7;
+}
+
+.app-header-menu__item span {
+    letter-spacing: -0.01em;
+}
+
+.app-header-menu__item .icon {
+    margin-right: -2px;
+}

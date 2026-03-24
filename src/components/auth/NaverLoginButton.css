@@ -1,0 +1,81 @@
+/**
+ * Naver Login Button Styling
+ * Official Naver Brand Color: #03C75A
+ * Height: 48px or 54px
+ */
+
+ .naver-login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+    background-color: #03C75A; /* Naver Official Green */
+    color: #ffffff;
+    border: none;
+    border-radius: 8px; /* Standard rounding */
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    user-select: none;
+    position: relative;
+    padding: 0 20px;
+}
+
+/* Height Variants per Design Guide */
+.naver-login-btn--v48 {
+    height: 48px;
+}
+
+.naver-login-btn--v54 {
+    height: 54px;
+}
+
+.naver-login-btn:hover {
+    background-color: #02b350; /* Slightly darker on hover */
+    box-shadow: 0 4px 12px rgba(3, 199, 90, 0.2);
+}
+
+.naver-login-btn:active {
+    transform: translateY(1px) scale(0.995);
+    opacity: 0.9;
+}
+
+.naver-login-btn:disabled {
+    background-color: #C7C7CC;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Logo and Layout inside the button */
+.naver-login-btn__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #ffffff; /* Naver buttons often have the logo on white circle or square */
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.naver-login-btn__logo img {
+    object-fit: contain;
+    width: 18px; /* Naver N logo size proportionality */
+    height: 18px;
+}
+
+.naver-login-btn__text {
+    flex: 1;
+    text-align: center;
+    margin-right: 44px; /* Balance for center text with logo on left */
+}
+
+@media (max-width: 360px) {
+    .naver-login-btn {
+        font-size: 14px;
+        padding: 0 16px;
+    }
+}

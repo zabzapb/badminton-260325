@@ -1,0 +1,182 @@
+/* page.css - Player Registration (Survey UI) */
+
+.register-title-main {
+    font-size: var(--text-h3);
+    font-weight: var(--fw-bold);
+    color: #000;
+    line-height: 1.3;
+    margin-bottom: var(--sp-4);
+}
+
+.register-step-info {
+    font-size: var(--text-caption);
+    color: #8E8E93;
+    margin-bottom: var(--sp-2);
+}
+
+.register-progress-bar {
+    width: 100%;
+    height: 2px;
+    background: #D1D1D6;
+    margin-bottom: var(--sp-8);
+    position: relative;
+}
+
+.register-progress-bar__active {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: var(--color-accent-orange);
+}
+
+
+
+/* Options (Buttons) */
+.register-options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-8);
+}
+
+.option-chip {
+    padding: var(--sp-3) var(--sp-5);
+    min-width: 68px;
+    text-align: center;
+    border: 1px solid #C7C7CC;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: #000;
+    font-size: var(--text-body);
+    font-weight: var(--fw-medium);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.option-chip--selected {
+    background: var(--color-accent-orange);
+    border-color: var(--color-accent-orange);
+    color: #fff;
+}
+
+/* Input / Textarea */
+.register-textarea-container {
+    background: #fff;
+    /* 배경색 통일 */
+    border: 1px solid #C7C7CC;
+    border-radius: var(--radius-sm);
+    /* 입력필드 라운드값(8px)으로 통일 */
+    padding: var(--sp-4);
+    /* 대회등록 표준 크기(16px) */
+    margin-bottom: var(--sp-8);
+    position: relative;
+}
+
+.register-textarea {
+    width: 100%;
+    min-height: 160px;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-family: inherit;
+    font-size: var(--text-body);
+    color: #000;
+    outline: none;
+}
+
+.register-textarea::placeholder {
+    color: #8E8E93;
+}
+
+.char-count {
+    position: absolute;
+    bottom: var(--sp-3);
+    right: var(--sp-4);
+    font-size: var(--text-tiny);
+    color: #8E8E93;
+}
+
+
+
+/* Form Group */
+.form-group {
+    margin-bottom: var(--sp-6);
+}
+
+.form-group-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-6);
+}
+
+.form-label {
+    font-size: var(--text-body);
+    font-weight: var(--fw-bold);
+    margin-bottom: var(--sp-2);
+    display: flex;
+    align-items: center;
+    color: #000;
+}
+
+.naver-auth-logo {
+    height: 16px;
+    width: 16px;
+    margin-left: 4px;
+    object-fit: contain;
+}
+
+.naver-auth-logo--modified {
+    filter: grayscale(100%) brightness(0.8) contrast(20);
+}
+
+.auth-badge {
+    font-size: inherit;
+    font-weight: 300;
+    color: rgba(0, 0, 0, 0.8);
+    margin-left: 4px;
+}
+
+.desc-text {
+    font-size: inherit;
+    font-weight: 400;
+    color: #8E8E93;
+    margin-left: 4px;
+}
+
+.form-input-premium {
+    width: 100%;
+    height: 56px;
+    /* 모든 입력 필드 높이 고정 */
+    border: 1px solid #C7C7CC;
+    border-radius: var(--radius-sm);
+    padding: 0 var(--sp-4);
+    /* 좌우 패딩만 사용 */
+    font-size: var(--text-title);
+    outline: none;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.form-input-premium:focus {
+    border-color: #000;
+}
+
+/* 값이 입력되었을 때만 볼드로 변경 (대회 등록과 통일) */
+.form-input-premium:not(:placeholder-shown),
+.register-textarea:not(:placeholder-shown) {
+    font-weight: var(--fw-bold);
+}
+
+.form-input-premium::placeholder,
+.register-textarea::placeholder {
+    font-weight: var(--fw-light);
+}
+
+/* Phone Number Balance */
+.phone-number-field {
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+}

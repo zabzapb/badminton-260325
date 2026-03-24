@@ -1,0 +1,188 @@
+/**
+ * Identity Resolution Styling
+ * Operational Intelligence UI
+ */
+
+.resolve-container {
+    padding: 32px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.resolve-header {
+    margin-bottom: 48px;
+    text-align: center;
+}
+
+.resolve-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #1c1c1e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.resolve-title .badge {
+    font-size: 11px;
+    color: #34c759;
+    background: rgba(52, 199, 89, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.05em;
+    font-weight: 900;
+    vertical-align: middle;
+}
+
+.resolve-subtitle {
+    font-size: 14px;
+    color: #8e8e93;
+    font-weight: 300;
+    margin-top: 8px;
+}
+
+/* Grid Layout */
+.resolve-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Diff Card (Side-by-Side) */
+.resolve-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e5ea;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.diff-view {
+    padding: 24px;
+}
+
+.diff-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    position: relative;
+}
+
+.diff-column {
+    flex: 1;
+}
+
+.column-label {
+    font-size: 11px;
+    color: #8e8e93;
+    font-weight: 700;
+    margin-bottom: 20px;
+    letter-spacing: 0.05em;
+}
+
+.info-item {
+    display: flex;
+    margin-bottom: 12px;
+    gap: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.info-item label {
+    width: 60px;
+    color: #8e8e93;
+    font-weight: 300;
+}
+
+.info-item span {
+    font-weight: 600;
+    color: #1c1c1e;
+}
+
+.diff-divider {
+    display: flex;
+    align-self: center;
+    background: #f2f2f7;
+    padding: 8px;
+    border-radius: 50%;
+    color: #c7c7cc;
+}
+
+/* New Data Highlight */
+.diff-column.highlight {
+    background: #fafafa;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px dashed #d1d1d6;
+}
+
+.status-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+    color: #ff9500;
+    background: rgba(255, 149, 0, 0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-top: 16px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 120px 0;
+    color: #8e8e93;
+}
+
+.diff-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #f2f2f7;
+}
+
+.btn-approve {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-reject {
+    background: transparent;
+    color: #ff3b30;
+    border: 1px solid rgba(255, 59, 48, 0.2);
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Diff Highlighting */
+.info-item.has-conflict span {
+    color: #ff9500; /* orange-500 equivalent */
+    background: rgba(255, 149, 0, 0.05);
+    padding: 2px 4px;
+    border-radius: 4px;
+    border-bottom: 1px dashed rgba(255, 149, 0, 0.3);
+}
+
+.diff-column.highlight .info-divider {
+    height: 1px;
+    background: #f2f2f7;
+    margin: 16px 0;
+}
+@media (min-width: 768px) {
+    .diff-view {
+        padding: 32px 48px;
+    }
+}

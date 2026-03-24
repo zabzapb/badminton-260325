@@ -1,0 +1,122 @@
+/* ─────────────────────────────────────────────
+   HomePage - Login Screen
+   Path: src/app/page.css
+───────────────────────────────────────────── */
+
+/* 전체 화면 중앙 정렬 */
+.home-root {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-bg);
+    padding: var(--sp-6) var(--sp-4);
+    /* 24px 16px */
+}
+
+/* 콘텐츠 영역 - 최대 너비 제한 */
+.home-center {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-6);
+    /* 24px */
+}
+
+/* ── 로고 ── */
+.home-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.home-logo__img {
+    width: 60%;
+    /* 기존 100%에서 60%로 축소 */
+    max-width: 280px;
+    height: auto;
+    display: block;
+    /* 검정 배경에서 흰색으로 보이도록 - 원본이 검정 계열이면 invert 적용 */
+    filter: brightness(0) invert(1);
+    -webkit-user-drag: none;
+}
+
+/* ── 서브타이틀 ── */
+.home-subtitle {
+    font-size: var(--text-body);
+    /* 14px */
+    font-weight: var(--fw-regular);
+    color: var(--color-text-secondary);
+    text-align: center;
+    line-height: 1.5;
+    margin-top: calc(var(--sp-2) * -1);
+    /* 로고와 간격 보정 -8px */
+}
+
+/* ── 네이버 로그인 버튼 ── */
+.btn-naver {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    /* 8px */
+    width: 100%;
+    height: 52px;
+    border-radius: 6px;
+    /* 네이버 공식 버튼 스펙 */
+    background-color: #03C75A;
+    /* Naver Green */
+    color: #ffffff;
+    font-size: var(--text-title);
+    /* 16px */
+    font-weight: var(--fw-semibold);
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    margin-top: var(--sp-4);
+    /* 16px - 버튼 위 여백 추가 */
+}
+
+.btn-naver:hover {
+    opacity: 0.9;
+}
+
+.btn-naver:active {
+    opacity: 0.85;
+    transform: scale(0.97);
+}
+
+.btn-naver:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+/* ── Loading Spinner ── */
+.spinner-small {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: hctc-spin 0.8s linear infinite;
+}
+
+@keyframes hctc-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── 하단 안내문 ── */
+.home-notice {
+    font-size: var(--text-caption);
+    /* 12px */
+    font-weight: var(--fw-light);
+    color: var(--color-text-disabled);
+    text-align: center;
+}

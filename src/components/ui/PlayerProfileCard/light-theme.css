@@ -1,0 +1,21 @@
+.player-profile-card--mini.light {
+    background: #F2F2F7 !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+}
+
+.player-profile-card--mini.light .player-profile-card__main-info-row .info-text {
+    color: #000 !important;
+}
+
+.player-profile-card--mini.light .player-profile-stat__value {
+    color: #000 !important;
+}
+
+.player-profile-card--mini.light .player-profile-stat__label {
+    color: rgba(0,0,0,0.5) !important;
+}
+
+.player-profile-card--mini.light .info-sep {
+    color: rgba(0,0,0,0.1) !important;
+}

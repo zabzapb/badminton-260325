@@ -1,0 +1,69 @@
+.player-profile-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 10px;
+    /* 상하 50px, 좌우 10px 여백 확보 */
+}
+
+.player-profile-popup-content {
+    background: #fff;
+    width: 100%;
+    max-width: 400px;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    position: relative;
+    /* For close button */
+    animation: popupSlideUp 0.3s ease-out;
+    padding-bottom: var(--sp-4);
+    /* 여백 확보 */
+}
+
+/* 팝업 내부의 선수 카드 통계 폰트 70% 축소 */
+.player-profile-popup-content .player-profile-stat__value {
+    font-size: calc(32px * 0.7);
+    /* 기존 32px의 70% */
+}
+
+.player-profile-popup-content .player-profile-stat__label {
+    font-size: calc(12px * 0.8);
+    /* 라벨도 약간 축소 */
+}
+
+.popup-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+    padding: 4px;
+    color: #8E8E93;
+    transition: color 0.2s;
+}
+
+.popup-close-btn:hover {
+    color: #000;
+}
+
+@keyframes popupSlideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

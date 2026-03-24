@@ -1,0 +1,112 @@
+.hkdk-calendar {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: var(--sp-4);
+    width: 100%;
+    max-width: 400px;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-6);
+    padding: 0 var(--sp-2);
+}
+
+.calendar-header__title {
+    font-size: 18px;
+    font-weight: var(--fw-bold);
+    color: #000;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.calendar-header__title .arrow-small {
+    margin-top: 2px;
+}
+
+.btn-calendar-nav {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendar-day-label {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    color: #444;
+    padding: 12px 0;
+    opacity: 0.8;
+}
+
+.calendar-day-label.sunday {
+    color: #ff5e5e;
+}
+
+.calendar-date-cell {
+    background: transparent;
+    border: none;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 400;
+    color: #333;
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.calendar-date-cell:hover {
+    background-color: #f5f5f5;
+}
+
+.calendar-date-cell.sunday {
+    color: #ff5e5e;
+}
+
+.calendar-date-cell.not-current,
+.calendar-date-cell.disabled {
+    color: #ccc !important;
+    opacity: 0.5;
+}
+
+.calendar-date-cell.disabled {
+    cursor: not-allowed;
+}
+
+/* Today indicator */
+.calendar-date-cell.today .date-number {
+    position: relative;
+}
+
+/* Selected state: Brand Orange circle */
+.calendar-date-cell.selected {
+    background-color: #FF6B3D !important;
+    color: #fff !important;
+}
+
+.calendar-date-cell.selected.sunday {
+    color: #fff !important;
+}
+
+/* Today style if not selected (small dot or subtle background) - image shows a grey circle for today as well in some views, but let's stick to the selection being the primary circle */
+.calendar-date-cell.today:not(.selected) {
+    background-color: #f1f3f5;
+}

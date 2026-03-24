@@ -1,0 +1,87 @@
+/* ─────────────────────────────────────────────
+   SegmentedControl Component Styles
+   Component: SegmentedControl
+   Path: src/components/ui/SegmentedControl/SegmentedControl.css
+───────────────────────────────────────────── */
+
+/* ── Container (pill-shaped track) ── */
+.segmented-control {
+    display: inline-flex;
+    align-items: center;
+    background: var(--color-surface);
+    /* #1C1C1E */
+    border-radius: var(--radius-full);
+    /* 24px corner radius */
+    padding: var(--sp-2);
+    /* 8px vertical padding on track */
+    gap: var(--sp-2);
+    /* 8px gap between tabs */
+    border: 1px solid var(--color-border);
+    /* Width: hug contents */
+}
+
+/* ── Full-width variant ── */
+.segmented-control--full {
+    display: flex;
+    width: 100%;
+}
+
+.segmented-control--full .segmented-control__tab {
+    flex: 1;
+}
+
+/* ── Individual Tab ── */
+.segmented-control__tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-2) var(--sp-4);
+    /* 8px 16px vertical/horizontal */
+    border-radius: var(--radius-full);
+    /* 24px pill shape for active */
+    font-size: var(--text-body);
+    /* 14px */
+    font-weight: var(--fw-medium);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    border: none;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background var(--transition-fast),
+        color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+/* Inactive Tab */
+.segmented-control__tab--inactive {
+    background: transparent;
+    /* Transparent */
+    color: var(--color-text-primary);
+    /* White text */
+}
+
+.segmented-control__tab--inactive:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.segmented-control__tab--inactive:active {
+    opacity: 0.7;
+}
+
+/* Active Tab */
+.segmented-control__tab--active {
+    background: #FFFFFF;
+    /* White background */
+    color: #000000;
+    /* Black text */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    font-weight: var(--fw-semibold);
+}
+
+/* ── Accent Variant (uses primary neon color) ── */
+.segmented-control--accent .segmented-control__tab--active {
+    background: var(--color-primary);
+    color: #000000;
+    box-shadow: var(--shadow-glow);
+}
