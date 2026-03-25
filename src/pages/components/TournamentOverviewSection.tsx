@@ -46,20 +46,17 @@ export const TournamentOverviewSection: React.FC<props> = ({
                 </div>
             </div>
 
-            {/* Dates Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="input-group">
-                    <label className="input-label">대회 일정</label>
-                    <div className="inline-item" onClick={() => setPickingDateType("eventDates")} style={{ cursor: 'pointer' }}>
+            {/* Schedule Management */}
+            <div className="input-group">
+                <label className="input-label">대회 일정 관리</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="inline-item" onClick={() => setPickingDateType("eventDates")} style={{ cursor: 'pointer', height: '48px' }}>
                         <Icon name="calendar" size={18} color="#FF6B3D" />
-                        <span style={{ fontWeight: 500 }}>{displayEventDates || "일정 선택"}</span>
+                        <span style={{ fontWeight: 500, flex: 1 }}>{displayEventDates || "대회 일정 선택"}</span>
                     </div>
-                </div>
-                <div className="input-group">
-                    <label className="input-label">접수 마감</label>
-                    <div className="inline-item" onClick={() => setPickingDateType("deadline")} style={{ cursor: 'pointer' }}>
+                    <div className="inline-item" onClick={() => setPickingDateType("deadline")} style={{ cursor: 'pointer', height: '48px' }}>
                         <Icon name="calendar" size={18} color="#34C759" />
-                        <span style={{ fontWeight: 500 }}>{displayDeadline || "마감일 선택"}</span>
+                        <span style={{ fontWeight: 500, flex: 1 }}>{displayDeadline || "접수 마감일 선택"}</span>
                     </div>
                 </div>
             </div>
@@ -80,10 +77,11 @@ export const TournamentOverviewSection: React.FC<props> = ({
             </div>
 
             {/* Entrance Fees */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div className="input-group">
-                    <label className="input-label">복식 참가비 (팀당)</label>
+            <div className="input-group">
+                <label className="input-label">대회 참가비</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div className="inline-item">
+                        <span style={{ fontSize: '14px', color: '#8E8E93', minWidth: '100px', fontWeight: 500 }}>복식 (팀 기준)</span>
                         <input 
                             className="input-field" 
                             placeholder="0"
@@ -93,10 +91,8 @@ export const TournamentOverviewSection: React.FC<props> = ({
                         />
                         <span style={{ fontSize: '14px', fontWeight: 700, marginLeft: '8px' }}>원</span>
                     </div>
-                </div>
-                <div className="input-group">
-                    <label className="input-label">단식 참가비 (인당)</label>
                     <div className="inline-item">
+                        <span style={{ fontSize: '14px', color: '#8E8E93', minWidth: '100px', fontWeight: 500 }}>단식 (1인)</span>
                         <input 
                             className="input-field" 
                             placeholder="0"
