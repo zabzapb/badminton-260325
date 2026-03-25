@@ -202,3 +202,31 @@ export const updateApplicationStatus = async (applicationId: string, status: str
     return { success: false, error: error.message };
   }
 };
+// [System] Migrate applications from one user ID to another (Used for account merging)
+export const migrateUserApplications = async (fromId: string, toId: string) => {
+    try {
+        const q = query(
+            collection(db, COLLECTION_APPLICATIONS),
+            or(
+                where("userId", "==", fromId),
+                where("partnerId", "==", fromId)
+            )
+        );
+        const snapshot = await getDocs(q);
+        let count = 0;
+
+        for (const docSnap of snapshot.docs) {
+            const data = docSnap.data();
+            const updates: any = {};
+            if (data.userId === fromId) updates.userId = toId;
+            if (data.partnerId === fromId) updates.partnerId = toId;
+            
+            await updateDoc(doc(db, COLLECTION_APPLICATIONS, docSnap.id), updates);
+            count++;
+        }
+        return { success: true, count };
+    } catch (error: any) {
+        console.error("Error migrating applications:", error);
+        return { success: false, error: error.message };
+    }
+};
