@@ -34,8 +34,24 @@ export const saveUserProfile = async (profile: UserProfile) => {
     return { success: false, error: "Invalid phone number format" };
   }
 
-  const uid = profile.id || generateUserUid(cleanPhone);
+  let uid = profile.id || generateUserUid(cleanPhone);
   
+  // ── [Identity Resolution] Attempt to find existing user by phone for auto-merge ──
+  // If we're creating a new profile (no id or p_ id), check if another record exists with this phone.
+  if (!profile.id || profile.id.startsWith("p_")) {
+    try {
+      const existingByPhone = await findUserByPhone(cleanPhone);
+      if (existingByPhone.success && Array.isArray(existingByPhone.data) && existingByPhone.data.length > 0) {
+        // Preference: 1. Exact Name match, 2. Naver account (NV_), 3. Any existing
+        const nameMatch = existingByPhone.data.find(u => u.realName === profile.realName);
+        const naverMatch = existingByPhone.data.find(u => u.id.startsWith("NV_"));
+        uid = (nameMatch?.id) || (naverMatch?.id) || existingByPhone.data[0].id;
+      }
+    } catch (err) {
+      console.warn("Identity resolution lookup failed:", err);
+    }
+  }
+
   // ── Existing Data Check to preserve createdAt/avatarUrl ──
   try {
     const existing = await getUserProfile(uid);
@@ -62,7 +78,7 @@ export const saveUserProfile = async (profile: UserProfile) => {
         avatarChangeCount: profile.avatarChangeCount ?? originalData.avatarChangeCount ?? 0,
         phone: cleanPhone,
         id: uid,
-        isVerified: profile.isVerified ?? originalData.isVerified ?? true,
+        isVerified: profile.isVerified || originalData.isVerified || false, // [Heuristic] Keep verified status if either is true
         updatedAt: new Date().toISOString(),
     };
 
