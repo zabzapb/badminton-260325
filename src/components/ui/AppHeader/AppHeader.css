@@ -4,13 +4,20 @@
     justify-content: space-between;
     height: 96px;
     padding: 0 var(--sp-5);
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.95); /* More opaque */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    position: sticky;
+    position: fixed; /* Fixed instead of sticky for better reliability with parents' overflow */
     top: 0;
-    z-index: 200;
+    left: 0;
+    right: 0;
+    z-index: 500; /* High enough to be over everything */
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Spacer to prevent content from going under fixed header */
+.app-header-placeholder {
+    height: 96px;
 }
 
 .app-header__logo {
@@ -52,7 +59,7 @@
     overflow: hidden;
     background-color: var(--color-bg);
     transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 150;
+    z-index: 450; /* Just below the header */
     border-bottom: 0 solid rgba(255, 255, 255, 0.1);
 }
 

@@ -45,6 +45,7 @@ export function AppHeader({ showMenu = true, logoHref = "/dashboard" }: AppHeade
 
     return (
         <>
+            <div className="app-header-placeholder" />
             <header className="app-header">
                 <Link 
                     to={logoHref} 

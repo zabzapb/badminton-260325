@@ -191,13 +191,23 @@ export default function TournamentRegistrationPage() {
                                     if (current.includes(d)) {
                                         setFormData({ ...formData, eventDates: current.filter(item => item !== d) });
                                     } else if (current.length < 2) {
-                                        setFormData({ ...formData, eventDates: [...current, d].sort() });
+                                        const newDates = [...current, d].sort();
+                                        // Validation: Tournament starts AFTER deadline
+                                        if (formData.deadline && newDates[0] <= formData.deadline) {
+                                            alert("대회일은 마감일(또는 그 이전)로 설정할 수 없습니다. \n마감일을 먼저 수정해주세요.");
+                                            return;
+                                        }
+                                        setFormData({ ...formData, eventDates: newDates });
                                     } else {
-                                        // Replace oldest if 2 already? or just toast? 
-                                        // Let's just do nothing or replace the last one.
                                         alert("최대 2일까지만 선택 가능합니다.");
                                     }
                                 } else {
+                                    // Validation: Deadline must be BEFORE the first tournament date
+                                    const firstEventDate = formData.eventDates?.[0];
+                                    if (firstEventDate && d >= firstEventDate) {
+                                        alert("접수 마감일은 대회 시작일보다 빨라야 합니다. \n(대회일: " + firstEventDate.replace(/-/g, ".") + ")");
+                                        return;
+                                    }
                                     setFormData({ ...formData, deadline: d }); 
                                     setPickingDateType(null); 
                                 }

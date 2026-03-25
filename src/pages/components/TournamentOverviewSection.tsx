@@ -79,48 +79,79 @@ export const TournamentOverviewSection: React.FC<props> = ({
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            {/* Entrance Fees */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="input-group">
-                    <label className="input-label">참가비 (팀당)</label>
+                    <label className="input-label">복식 참가비 (팀당)</label>
                     <div className="inline-item">
                         <input 
-                            type="number"
                             className="input-field" 
                             placeholder="0"
-                            value={formData.entryFee || ""} 
-                            onChange={e => setFormData({ ...formData, entryFee: Number(e.target.value) })} 
+                            value={formatNumber(String(formData.feeDoubles || ""))} 
+                            onChange={e => setFormData({ ...formData, feeDoubles: e.target.value.replace(/[^0-9]/g, "") })} 
                             style={{ border: 'none', padding: 0, textAlign: 'right', flex: 1 }}
                         />
                         <span style={{ fontSize: '14px', fontWeight: 700, marginLeft: '8px' }}>원</span>
                     </div>
                 </div>
                 <div className="input-group">
-                    <label className="input-label">대회 년도</label>
+                    <label className="input-label">단식 참가비 (인당)</label>
                     <div className="inline-item">
                         <input 
-                            type="number"
                             className="input-field" 
-                            placeholder="2026"
-                            value={formData.baseYear || 2026} 
-                            onChange={e => setFormData({ ...formData, baseYear: Number(e.target.value) })} 
+                            placeholder="0"
+                            value={formatNumber(String(formData.feeSingles || ""))} 
+                            onChange={e => setFormData({ ...formData, feeSingles: e.target.value.replace(/[^0-9]/g, "") })} 
                             style={{ border: 'none', padding: 0, textAlign: 'right', flex: 1 }}
                         />
-                        <span style={{ fontSize: '14px', fontWeight: 700, marginLeft: '8px' }}>년</span>
+                        <span style={{ fontSize: '14px', fontWeight: 700, marginLeft: '8px' }}>원</span>
                     </div>
                 </div>
             </div>
 
+            {/* Deposit Account Info */}
             <div className="input-group">
                 <label className="input-label">입금 계좌 정보</label>
-                <div className="inline-item">
-                    <Icon name="info" size={18} color="#C7C7CC" />
-                    <input 
-                        className="input-field" 
-                        placeholder="은행명 계좌번호 예금주"
-                        value={formData.accountInfo || ""} 
-                        onChange={e => setFormData({ ...formData, accountInfo: e.target.value })} 
-                        style={{ border: 'none', padding: 0 }}
-                    />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="inline-item" style={{ height: '48px' }}>
+                        <Icon name="info" size={18} color="#C7C7CC" />
+                        <input 
+                            className="input-field" 
+                            placeholder="은행명 (예: 국민은행)"
+                            value={formData.account?.bank || ""} 
+                            onChange={e => setFormData({ 
+                                ...formData, 
+                                account: { ...formData.account, bank: e.target.value } 
+                            })} 
+                            style={{ border: 'none', padding: 0 }}
+                        />
+                    </div>
+                    <div className="inline-item" style={{ height: '48px' }}>
+                        <Icon name="info" size={18} color="#C7C7CC" />
+                        <input 
+                            className="input-field" 
+                            placeholder="계좌번호 (숫자만 입력)"
+                            value={formData.account?.accountNumber || ""} 
+                            onChange={e => setFormData({ 
+                                ...formData, 
+                                account: { ...formData.account, accountNumber: e.target.value } 
+                            })} 
+                            style={{ border: 'none', padding: 0 }}
+                        />
+                    </div>
+                    <div className="inline-item" style={{ height: '48px' }}>
+                        <Icon name="info" size={18} color="#C7C7CC" />
+                        <input 
+                            className="input-field" 
+                            placeholder="예금주"
+                            value={formData.account?.owner || ""} 
+                            onChange={e => setFormData({ 
+                                ...formData, 
+                                account: { ...formData.account, owner: e.target.value } 
+                            })} 
+                            style={{ border: 'none', padding: 0 }}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
