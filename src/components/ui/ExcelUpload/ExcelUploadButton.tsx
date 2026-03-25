@@ -89,7 +89,7 @@ export function ExcelUploadButton({ onUploadComplete }: ExcelUploadButtonProps) 
                     club: String(row["클럽"] || row["소속"] || "").trim(),
                     phone,
                     tshirtGender: (gender === "F") ? "여성" : "남성",
-                    tshirtSize: String(row["사이즈"] || row["티셔츠"] || "L").toUpperCase().trim(),
+                    tshirtSize: String(row["사이즈"] || row["티셔츠"] || "-").toUpperCase().trim(),
                     isVerified: false,
                     isManager: false,
                     isMaster: false,

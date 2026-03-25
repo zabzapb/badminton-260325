@@ -11,7 +11,7 @@ export const useUserProfileForm = () => {
     
     const [formData, setFormData] = useState({
         realName: "", nickname: "", gender: "M", birthDate: "", level: "D", club: "", phone: "",
-        tshirtGender: "남성", tshirtSize: "L", avatarUrl: "", avatarChangeCount: 0, id: "", isVerified: false,
+        tshirtGender: "남성", tshirtSize: "-", avatarUrl: "", avatarChangeCount: 0, id: "", isVerified: false,
         originalRealName: "", originalGender: "", originalPhone: "", originalLevel: "", originalBirthDate: ""
     });
     const [loading, setLoading] = useState(true);

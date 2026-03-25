@@ -59,9 +59,7 @@ export async function finalizeLogin(profile: UserProfile): Promise<{ success: bo
     setProfileLocally(finalProfile);
     localStorage.setItem("hctc_user_profile", JSON.stringify(finalProfile));
     
-    // 5. Dashboard Refresh
-    await loadDashboard();
-
+    // 5. Success (Dashboard will load on its own via useEffect when redirected)
     return { success: true, isNewUser };
   } catch (error) {
     logger.authFailed('AUTH_EXCEPTION', provider, { error });

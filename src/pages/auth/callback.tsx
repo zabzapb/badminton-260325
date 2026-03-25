@@ -15,20 +15,20 @@ import './callback.css';
 export default function NaverAuthCallback() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const [status, setStatus] = useState<'loading' | 'error'>('loading');
+    const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+    const [step, setStep] = useState<'verifying' | 'exchanging' | 'syncing' | 'redirecting'>('verifying');
     const hasProcessed = useRef(false);
 
     useEffect(() => {
-        // [Safety Net] Max 5 seconds for the whole process
+        // [Safety Net] Max 10 seconds for the whole process
         const safetyTimeout = setTimeout(() => {
             if (status === 'loading') {
-                console.error('Authentication process timed out (5s)');
+                console.error('Authentication process timed out (10s)');
                 setStatus('error');
             }
-        }, 5000);
+        }, 10000);
 
         const processAuth = async () => {
-            // [Resilience] Prevent double execution in React 18 Strict Mode
             if (hasProcessed.current) return;
             hasProcessed.current = true;
 
@@ -37,45 +37,49 @@ export default function NaverAuthCallback() {
             const error = searchParams.get('error');
 
             if (error || !code) {
-                console.error('Naver login failed:', error);
                 setStatus('error');
                 clearTimeout(safetyTimeout);
                 return;
             }
 
             try {
-                // 1. [Security] Verify CSRF state
+                // 1. Verify CSRF
+                setStep('verifying');
                 if (!verifyOauthState(state)) {
-                    console.warn('Security Alert: Invalid CSRF state.');
                     setStatus('error');
                     clearTimeout(safetyTimeout);
                     return;
                 }
 
-                // 2. Real: Exchange token and fetch profile
+                // 2. Exchange token
+                setStep('exchanging');
                 const accessToken = await exchangeNaverToken(code, state);
                 const naverProfileData = await fetchNaverProfile(accessToken);
 
-                // 3. Normalize and Sync
+                // 3. Sync
+                setStep('syncing');
                 const normalized = normalizeNaverUser(naverProfileData);
                 const { success, isNewUser } = await finalizeLogin(normalized as UserProfile);
 
                 if (success) {
+                    setStatus('success');
+                    setStep('redirecting');
                     clearTimeout(safetyTimeout);
-                    if (isNewUser) {
-                        // [Forced Progress] Redirect to Profile Management for first-time or incomplete setups
-                        navigate('/register', { replace: true });
-                    } else {
-                        navigate('/dashboard', { replace: true });
-                    }
+                    
+                    // Small delay to let user see success state before redirecting (feels smoother)
+                    setTimeout(() => {
+                        if (isNewUser) {
+                            navigate('/register', { replace: true });
+                        } else {
+                            navigate('/dashboard', { replace: true });
+                        }
+                    }, 500);
                 } else {
                     setStatus('error');
-                    clearTimeout(safetyTimeout);
                 }
             } catch (err) {
-                console.error('Naver Authentication Finalize failed:', err);
+                console.error('Login error:', err);
                 setStatus('error');
-                clearTimeout(safetyTimeout);
             }
         };
 
@@ -86,20 +90,33 @@ export default function NaverAuthCallback() {
     return (
         <div className="callback-page">
             <div className="callback-container">
-                {status === 'loading' ? (
-                    <>
+                {status === 'loading' && (
+                    <div className="callback-loading-ui">
                         <div className="loading-spinner-large" />
-                        <h2 className="callback-status">네이버 인증 처리 중</h2>
+                        <h2 className="callback-status">
+                            {step === 'verifying' && "인증 정보 확인 중..."}
+                            {step === 'exchanging' && "프로필 정보를 가져오는 중..."}
+                            {step === 'syncing' && "데이터 동기화 중..."}
+                        </h2>
                         <p className="callback-hint">잠시만 기다려 주세요. 안전하게 로그인 중입니다.</p>
-                    </>
-                ) : (
+                    </div>
+                )}
+
+                {status === 'success' && (
+                    <div className="callback-success-ui">
+                        <div className="success-lottie-placeholder">✅</div>
+                        <h2 className="callback-status">로그인 완료!</h2>
+                        <p className="callback-hint">곧 서비스 화면으로 이동합니다.</p>
+                    </div>
+                )}
+
+                {status === 'error' && (
                     <>
                         <div className="error-icon">⚠️</div>
                         <h2 className="callback-status">로그인 실패</h2>
                         <p className="callback-hint">네이버 인증 서버와 통신 중 오류가 발생했습니다.</p>
                         <p className="callback-hint-minor">
-                            브라우저의 CORS 정책 또는 네트워크 상태를 확인해 주세요. 
-                            (로컬 개발 시에는 Vite Proxy 설정을, 배포 시에는 API 환경 설정을 확인해야 합니다.)
+                            잠시 후 다시 시도하시거나 관리자에게 문의바랍니다.
                         </p>
                         <button className="btn-retry" onClick={() => navigate('/')}>다시 시도하기</button>
                     </>

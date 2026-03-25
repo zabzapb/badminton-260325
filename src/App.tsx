@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { initializeUserFromDB } from '@/core/store/userStore'
+import { AuthGuard } from '@/components/auth/AuthGuard'
 
 // ── Static Imports (Direct) ────────────────────────
 // Critical for auth flows to avoid black screen and improve speed
@@ -47,8 +49,30 @@ function PageLoader() {
   )
 }
 
+import { useSyncWorker } from '@/hooks/useSyncWorker'
+
 // ── App Shell ──────────────────────────────────────
 export default function App() {
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Background sync worker to process pending local-only updates
+  useSyncWorker();
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        await initializeUserFromDB();
+      } catch (e) {
+        console.error("Session restore failed", e);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+    restoreSession();
+  }, []);
+
+  if (isInitializing) return <PageLoader />;
+
   return (
     <div className="app-shell">
       <Suspense fallback={<PageLoader />}>
@@ -56,21 +80,22 @@ export default function App() {
           {/* Public */}
           <Route path="/" element={<HomePage />} />
           <Route path="/auth/naver/callback" element={<NaverAuthCallback />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/dashboard/edit/:id" element={<DashboardEditPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/register/tournament" element={<RegisterTournamentPage />} />
-          <Route path="/tournament/:id/apply" element={<TournamentApplyPage />} />
-          <Route path="/tournament/:id/edit" element={<TournamentEditPage />} />
-          <Route path="/master" element={<MasterPage />} />
+          {/* Protected */}
+          <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
+          <Route path="/dashboard/edit/:id" element={<AuthGuard><DashboardEditPage /></AuthGuard>} />
+          <Route path="/register" element={<AuthGuard><RegisterPage /></AuthGuard>} />
+          <Route path="/register/tournament" element={<AuthGuard><RegisterTournamentPage /></AuthGuard>} />
+          <Route path="/tournament/:id/apply" element={<AuthGuard><TournamentApplyPage /></AuthGuard>} />
+          <Route path="/tournament/:id/edit" element={<AuthGuard><TournamentEditPage /></AuthGuard>} />
+          <Route path="/master" element={<AuthGuard><MasterPage /></AuthGuard>} />
 
           {/* Admin */}
-          <Route path="/admin/cleanup" element={<AdminCleanupPage />} />
-          <Route path="/admin/seed" element={<AdminSeedPage />} />
-          <Route path="/admin/players" element={<AdminPlayersPage />} />
-          <Route path="/admin/players/new" element={<AdminPlayerNewPage />} />
-          <Route path="/admin/players/:id/edit" element={<AdminPlayerEditPage />} />
-          <Route path="/admin/identity-resolve" element={<IdentityResolvePage />} />
+          <Route path="/admin/cleanup" element={<AuthGuard><AdminCleanupPage /></AuthGuard>} />
+          <Route path="/admin/seed" element={<AuthGuard><AdminSeedPage /></AuthGuard>} />
+          <Route path="/admin/players" element={<AuthGuard><AdminPlayersPage /></AuthGuard>} />
+          <Route path="/admin/players/new" element={<AuthGuard><AdminPlayerNewPage /></AuthGuard>} />
+          <Route path="/admin/players/:id/edit" element={<AuthGuard><AdminPlayerEditPage /></AuthGuard>} />
+          <Route path="/admin/identity-resolve" element={<AuthGuard><IdentityResolvePage /></AuthGuard>} />
         </Routes>
       </Suspense>
     </div>

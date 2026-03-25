@@ -48,7 +48,7 @@ export function normalizeNaverUser(naverData: NaverResponseData): Partial<UserPr
     id: profile.id,
     realName: profile.name || profile.nickname || 'Unknown',
     nickname: profile.nickname,
-    gender: profile.gender === 'W' ? 'F' : 'M',
+    gender: (profile.gender?.toUpperCase() === 'F' || profile.gender?.toUpperCase() === 'W') ? 'F' : 'M',
     phone: normalizedPhone,
     birthYear: profile.birthyear ? parseInt(profile.birthyear, 10) : undefined,
     birthDate: (profile.birthyear && profile.birthday) ? `${profile.birthyear}-${profile.birthday}` : undefined,
