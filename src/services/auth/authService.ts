@@ -35,8 +35,8 @@ export async function finalizeLogin(profile: UserProfile): Promise<{ success: bo
     
     const now = new Date().toISOString();
     const finalProfile: UserProfile = {
-      ...existingData,
       ...profile,
+      ...existingData,
       id: providerId,
       createdAt: existingData.createdAt || now,
       updatedAt: now,
