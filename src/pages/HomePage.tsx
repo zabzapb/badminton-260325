@@ -1,17 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { generateNaverAuthUrl } from '@/services/auth/naverProvider';
-import { isInAppBrowser } from '@/utils/browser';
+import BandEscapeGuard from '@/components/auth/BandEscapeGuard';
 import './HomePage.css';
 
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [showInAppWarning, setShowInAppWarning] = useState(false);
-
-  useEffect(() => {
-    if (isInAppBrowser()) {
-      setShowInAppWarning(true);
-    }
-  }, []);
 
   const handleNaverLogin = () => {
     setIsLoading(true);
@@ -28,16 +21,6 @@ export default function HomePage() {
 
   return (
     <div className="home-root">
-      {showInAppWarning && (
-        <div className="in-app-browser-banner">
-          <div className="banner-content">
-            <span className="icon">⚠️</span>
-            <span className="text">현재 인앱 브라우저입니다. 원활한 로그인을 위해 <strong>'다른 브라우저로 열기'</strong>를 추천합니다.</span>
-            <button className="btn-close-banner" onClick={() => setShowInAppWarning(false)}>×</button>
-          </div>
-        </div>
-      )}
-
       <div className="home-center">
         {/* 로고 */}
         <div className="home-logo" aria-label="한콕두콕 로고">
@@ -55,24 +38,25 @@ export default function HomePage() {
           Player Profile Registration System
         </p>
 
-        {/* 네이버 로그인 버튼 */}
-        <button
-          className={`btn-naver ${isLoading ? 'btn-naver--loading' : ''} ${showInAppWarning ? 'btn-naver--wobble' : ''}`}
-          id="btn-naver-login"
-          onClick={handleNaverLogin}
-          disabled={isLoading}
-          aria-label="네이버 계정으로 로그인"
-        >
-          {isLoading ? (
-            <div className="spinner-small" />
-          ) : (
-            <>
-              <NaverN />
-              <span>네이버 로그인</span>
-            </>
-          )}
-        </button>
-
+        {/* [Pre-emptive Escape] 밴드 인앱 브라우저 대응 가드 */}
+        <BandEscapeGuard>
+          <button
+            className={`btn-naver ${isLoading ? 'btn-naver--loading' : ''}`}
+            id="btn-naver-login"
+            onClick={handleNaverLogin}
+            disabled={isLoading}
+            aria-label="네이버 계정으로 로그인"
+          >
+            {isLoading ? (
+              <div className="spinner-small" />
+            ) : (
+              <>
+                <NaverN />
+                <span>네이버 로그인</span>
+              </>
+            )}
+          </button>
+        </BandEscapeGuard>
         <p className="home-notice">
           Powered by @zabzapb | Contact: zabzap.lab@gmail.com
         </p>
