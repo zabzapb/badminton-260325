@@ -3,7 +3,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #000; /* 블랙 배경 */
+    background-color: #191820; /* 다크 네이비 배경 */
 }
 
 .callback-container {
@@ -18,7 +18,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: #000; /* 블랙 배경 */
+    background-color: #191820; /* 다크 네이비 배경 */
     display: flex;
     align-items: center;
     justify-content: center;
