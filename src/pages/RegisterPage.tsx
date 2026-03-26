@@ -61,11 +61,11 @@ export default function RegisterPage() {
                         </div>
                     </div>
                     <div className="form-group">
-                        <label>실명</label>
+                        <label className="form-label">실명</label>
                         <input className="form-input-premium" value={formData.realName} readOnly disabled />
                     </div>
                     <div className="form-group">
-                        <label>한콕두콕 닉네임 (선택)</label>
+                        <label className="form-label">한콕두콕 닉네임 (선택)</label>
                         <input 
                             name="nickname"
                             className="form-input-premium" 
@@ -75,22 +75,22 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div className="form-group">
-                        <label>성별</label>
+                        <label className="form-label">성별</label>
                         <div className="register-options-grid">
                             <button type="button" className={`option-chip ${formData.gender === "M" ? "option-chip--selected" : ""}`} disabled>남성</button>
                             <button type="button" className={`option-chip ${formData.gender === "F" ? "option-chip--selected" : ""}`} disabled>여성</button>
                         </div>
                     </div>
                     <div className="form-group">
-                        <label>연락처</label>
+                        <label className="form-label">연락처</label>
                         <input className="form-input-premium" value={formatPhone(formData.phone)} readOnly disabled />
                     </div>
                     <div className="form-group">
-                        <label>생년월일</label>
+                        <label className="form-label">생년월일</label>
                         <input name="birthDate" type="date" className="form-input-premium" value={formData.birthDate} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>구 급수 기준</label>
+                        <label className="form-label">구 급수 기준</label>
                         <div className="register-options-grid">
                             {["S", "A", "B", "C", "D", "E", "F"].map(lv => (
                                 <button key={lv} type="button" className={`option-chip ${formData.level === lv ? "option-chip--selected" : ""}`} onClick={() => setFormData(p => ({ ...p, level: lv }))}>{lv}</button>
@@ -98,7 +98,7 @@ export default function RegisterPage() {
                         </div>
                     </div>
                     <div className="form-group">
-                        <label>티셔츠 사이즈 (대회 기념품용)</label>
+                        <label className="form-label">티셔츠 사이즈 (대회 기념품용)</label>
                         <div className="register-options-grid">
                             {[
                                 { v: "85", l: "XS" },
@@ -114,14 +114,31 @@ export default function RegisterPage() {
                         </div>
                     </div>
                     <div className="form-group">
-                        <label>협회 등록 클럽</label>
+                        <label className="form-label">마포구배드민턴협회 등록</label>
                         <div className="register-options-grid">
-                            {["한콕두콕", "협회등록 안함"].map(c => (
-                                <button key={c} type="button" className={`option-chip ${!isManualClub && formData.club === c ? "option-chip--selected" : ""}`} onClick={() => { setIsManualClub(false); setFormData(p => ({ ...p, club: c })); }}>{c}</button>
-                            ))}
-                            <button type="button" className={`option-chip ${isManualClub ? "option-chip--selected" : ""}`} onClick={() => { setIsManualClub(true); setFormData(p => ({ ...p, club: "" })); }}>타 클럽</button>
+                            {["한콕두콕으로 협회 등록", "협회등록 안함"].map(c => {
+                                const isSelected = (!isManualClub && (
+                                    (c === "한콕두콕으로 협회 등록" && formData.club === "한콕두콕") || 
+                                    (c === "협회등록 안함" && formData.club === "협회등록 안함")
+                                ));
+                                return (
+                                    <button 
+                                        key={c} 
+                                        type="button" 
+                                        className={`option-chip ${isSelected ? "option-chip--selected" : ""}`} 
+                                        onClick={() => { 
+                                            setIsManualClub(false); 
+                                            setFormData(p => ({ ...p, club: c === "한콕두콕으로 협회 등록" ? "한콕두콕" : "협회등록 안함" })); 
+                                        }}
+                                    >
+                                        {c}
+                                    </button>
+                                );
+                            })}
                         </div>
-                        {isManualClub && <input className="form-input-premium" placeholder="클럽명" value={formData.club} onChange={e => setFormData(p => ({ ...p, club: e.target.value }))} autoFocus />}
+                        <p style={{ fontSize: '12px', color: '#8E8E93', fontWeight: 500 }}>
+                            *서울시 마포구 대회에 참가 시에는 협회 등록이 필수입니다.
+                        </p>
                     </div>
                     <footer className="form-action-footer">
                         <button type="button" onClick={() => navigate(-1)} className="btn-nav-back"><Icon name="arrow-right" size={20} style={{ transform: "rotate(180deg)" }} color="#000" /></button>
