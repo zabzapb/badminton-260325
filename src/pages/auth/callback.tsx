@@ -16,6 +16,7 @@ export default function NaverAuthCallback() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+    const [errorCode, setErrorCode] = useState<string | null>(null);
     const [step, setStep] = useState<'verifying' | 'exchanging' | 'syncing' | 'redirecting'>('verifying');
     const hasProcessed = useRef(false);
 
@@ -24,6 +25,7 @@ export default function NaverAuthCallback() {
         const safetyTimeout = setTimeout(() => {
             if (status === 'loading') {
                 console.error('Authentication process timed out (10s)');
+                setErrorCode('ERR_AUTH_TIMEOUT');
                 setStatus('error');
             }
         }, 10000);
@@ -37,6 +39,7 @@ export default function NaverAuthCallback() {
             const error = searchParams.get('error');
 
             if (error || !code) {
+                setErrorCode(error === 'access_denied' ? 'ERR_AUTH_002' : 'ERR_AUTH_INVALID_REQUEST');
                 setStatus('error');
                 clearTimeout(safetyTimeout);
                 return;
@@ -46,6 +49,7 @@ export default function NaverAuthCallback() {
                 // 1. Verify CSRF
                 setStep('verifying');
                 if (!verifyOauthState(state)) {
+                    setErrorCode('ERR_AUTH_001');
                     setStatus('error');
                     clearTimeout(safetyTimeout);
                     return;
@@ -73,10 +77,12 @@ export default function NaverAuthCallback() {
                         navigate('/dashboard', { replace: true });
                     }
                 } else {
+                    setErrorCode('ERR_AUTH_SYNC_FAILED');
                     setStatus('error');
                 }
             } catch (err) {
                 console.error('Login error:', err);
+                setErrorCode('ERR_AUTH_EXCEPTION');
                 setStatus('error');
             }
         };
@@ -112,9 +118,14 @@ export default function NaverAuthCallback() {
                     <>
                         <div className="error-icon">⚠️</div>
                         <h2 className="callback-status">로그인 실패</h2>
-                        <p className="callback-hint">네이버 인증 서버와 통신 중 오류가 발생했습니다.</p>
-                        <p className="callback-hint-minor">
-                            잠시 후 다시 시도하시거나 관리자에게 문의바랍니다.
+                        <p className="callback-hint">네이버 인증 중 오류가 발생했습니다.</p>
+                        <p className="code-display" style={{ fontSize: '12px', color: '#ff6b3d', marginTop: '8px', opacity: 0.8 }}>
+                            Error Code: {errorCode || 'UNKNOWN'}
+                        </p>
+                        <p className="callback-hint-minor" style={{ marginTop: '16px' }}>
+                            {errorCode === 'ERR_AUTH_001' ? '세션 정보가 유실되었습니다. 브라우저를 새로고침하거나 다른 브라우저에서 다시 시도해 주세요.' : 
+                             errorCode === 'ERR_AUTH_002' ? '인앱 브라우저에서 차단되었습니다. 외부 브라우저(크롬, 사파리 등)로 실행해 주세요.' :
+                             '잠시 후 다시 시도하시거나 관리자에게 문의바랍니다.'}
                         </p>
                         <button className="btn-retry" onClick={() => navigate('/')}>다시 시도하기</button>
                     </>

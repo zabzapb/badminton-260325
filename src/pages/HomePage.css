@@ -112,6 +112,77 @@
     to { transform: rotate(360deg); }
 }
 
+/* ── In-App Browser Warning Banner ── */
+.in-app-browser-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #ffecb3; /* Soft Amber Warning */
+    color: #5d4037;
+    padding: var(--sp-3) var(--sp-4);
+    z-index: 1000;
+    border-bottom: 2px solid #ffe082;
+    animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.banner-content .icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.banner-content .text {
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: var(--fw-medium);
+}
+
+.banner-content strong {
+    color: #ef6c00;
+    font-weight: var(--fw-bold);
+}
+
+.btn-close-banner {
+    position: absolute;
+    right: -8px;
+    top: -4px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #8d6e63;
+    padding: 8px;
+    cursor: pointer;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes wobble {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.02) rotate(1deg); }
+  50% { transform: scale(1) rotate(-1deg); }
+  75% { transform: scale(1.02) rotate(1deg); }
+  100% { transform: scale(1); }
+}
+
+.btn-naver--wobble {
+    animation: wobble 2s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(3, 199, 90, 0.3);
+}
+
+/* ─────────────────────────────────────────── */
+
 /* ── 하단 안내문 ── */
 .home-notice {
     font-size: var(--text-caption);
