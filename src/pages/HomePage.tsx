@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { generateNaverAuthUrl } from '@/services/auth/naverProvider';
-import BandEscapeGuard from '@/components/auth/BandEscapeGuard';
 import './HomePage.css';
 
 export default function HomePage() {
@@ -22,6 +21,7 @@ export default function HomePage() {
   return (
     <div className="home-root">
       <div className="home-center">
+
         {/* 로고 */}
         <div className="home-logo" aria-label="한콕두콕 로고">
           <img
@@ -38,25 +38,24 @@ export default function HomePage() {
           Player Profile Registration System
         </p>
 
-        {/* [Pre-emptive Escape] 밴드 인앱 브라우저 대응 가드 */}
-        <BandEscapeGuard>
-          <button
-            className={`btn-naver ${isLoading ? 'btn-naver--loading' : ''}`}
-            id="btn-naver-login"
-            onClick={handleNaverLogin}
-            disabled={isLoading}
-            aria-label="네이버 계정으로 로그인"
-          >
-            {isLoading ? (
-              <div className="spinner-small" />
-            ) : (
-              <>
-                <NaverN />
-                <span>네이버 로그인</span>
-              </>
-            )}
-          </button>
-        </BandEscapeGuard>
+        {/* 네이버 로그인 버튼 */}
+        <button
+          className={`btn-naver ${isLoading ? 'btn-naver--loading' : ''}`}
+          id="btn-naver-login"
+          onClick={handleNaverLogin}
+          disabled={isLoading}
+          aria-label="네이버 계정으로 로그인"
+        >
+          {isLoading ? (
+            <div className="spinner-small" />
+          ) : (
+            <>
+              <NaverN />
+              <span>네이버 로그인</span>
+            </>
+          )}
+        </button>
+
         <p className="home-notice">
           Powered by @zabzapb | Contact: zabzap.lab@gmail.com
         </p>

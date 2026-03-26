@@ -46,16 +46,5 @@
 *   **Environment Variable Security (환경 변수 보안 강화)**:
     *   클라이언트 측에 노출되는 `VITE_` 접두사 변수 외에, 민감한 Secret 값들은 향후 Firebase Functions(Backend)에서만 접근하도록 아키텍처를 고도화한다.
 
-### 6. In-App Browser Resilience (인앱 브라우저 대응)
-*   **패턴명:** Band Pre-emptive Escape Pattern (밴드 선제적 탈출 패턴)
-*   **원칙:** 네이버 밴드 등 세션 파편화(Context Fragmentation)가 심한 인앱 브라우저 환경에서 에러를 복구하려 하지 말고, 결함이 없는 외부 브라우저 환경으로 사용자를 우회시킨다.
-*   **실행 (`BandEscapeGuard`):**
-    *   **Detection:** User-Agent 기반으로 밴드 인앱 브라우저를 정밀하게 감지한다.
-    *   **Active Restoration:** 안드로이드의 경우 `intent://` 스키마를 통해 크롬 브라우저를 강제 호출한다.
-    *   **Manual Escape:** iOS 사용자를 위해 클립보드 복사 기능을 제공하고, '다른 브라우저로 열기' 가이드를 UI 전면에 배치한다.
-*   **목적:** 인증 오류(State Mismatch)로 인한 사용자 이탈을 방지하고, 브라우저 샌드박스 제약을 원천적으로 회피한다.
-
----
-
-**업데이트 일시:** 2026-03-26
+**업데이트 일시:** 2026-03-24
 **상태:** 기록 및 관리됨
