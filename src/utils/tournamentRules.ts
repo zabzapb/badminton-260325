@@ -54,14 +54,18 @@ export const isGradeAllowed = (
     applyGrade: string, 
     selfGrade: string
 ) => {
-    // [수정] 전국대회여도 기본적으로 본인 급수 이상만 신청 가능하도록 엄격히 적용
+    // [규칙 개선] S와 A는 동일 등급으로 간주하여 상호 지원(S↔A) 허용
+    const isSOrA = (g: string) => g === "S" || g === "A";
+    if (isSOrA(selfGrade) && isSOrA(applyGrade)) return true;
+
+    // 기본적으로 본인 급수 이상만 신청 가능하도록 엄격히 적용
     const applyIdx = LEVEL_LIST.indexOf(applyGrade);
     const selfIdx = LEVEL_LIST.indexOf(selfGrade);
     
     if (applyIdx === -1 || selfIdx === -1) return true;
     
-    // selfIdx가 더 크다는 것은 하위 급수라는 뜻 (LEVEL_LIST 순서상 하단)
-    // 본인 급수(selfIdx)는 신청급수(applyIdx)보다 같거나 커야 함 (예: 본인 D8 >= 신청 C5)
+    // selfIdx가 더 크거나 같다는 것은 본인이 신청 급수와 같거나 더 하위 급수(실력이 낮음)라는 뜻
+    // 즉, 상향 지원만 허용하는 로직
     return selfIdx >= applyIdx; 
 };
 
