@@ -90,13 +90,18 @@ export default function NaverAuthCallback() {
             <div className="callback-container">
                 {status === 'loading' && (
                     <div className="callback-loading-ui">
-                        <div className="loading-spinner-large" />
-                        <h2 className="callback-status">
+                        <div className="loading-logo-container">
+                            <img src="/loading.gif" alt="로딩 중" className="loading-logo-img" />
+                            <div className="loading-text-overlay">
+                                네이버 인증을 처리 중입니다.<br/>
+                                <span style={{ opacity: 0.7, fontSize: '11px' }}>한콕두콕 배드민턴 오픈클럽</span>
+                            </div>
+                        </div>
+                        <h2 className="callback-status" style={{ fontSize: '14px', marginTop: '16px' }}>
                             {step === 'verifying' && "인증 정보 확인 중..."}
                             {step === 'exchanging' && "프로필 정보를 가져오는 중..."}
                             {step === 'syncing' && "데이터 동기화 중..."}
                         </h2>
-                        <p className="callback-hint">잠시만 기다려 주세요. 안전하게 로그인 중입니다.</p>
                     </div>
                 )}
 
