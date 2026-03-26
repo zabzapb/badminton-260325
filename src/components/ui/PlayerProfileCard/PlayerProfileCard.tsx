@@ -159,7 +159,7 @@ export function PlayerProfileCard({
 
             <div className="player-profile-card__divider" />
 
-            <div className="player-profile-card__stats" style={{ gridTemplateColumns: `repeat(${showEntry ? 4 : 3}, 1fr)` }}>
+            <div className="player-profile-card__stats" style={{ gridTemplateColumns: isMini ? 'auto' : `repeat(${showEntry ? 4 : 3}, 1fr)` }}>
                 <div className="player-profile-stat">
                     {(() => {
                         const by = profile.birthYear || 0;
@@ -170,7 +170,7 @@ export function PlayerProfileCard({
                             <>
                                 <span className="player-profile-stat__value">{displayYear || "-"}</span>
                                 <span className="player-profile-stat__label">
-                                    {age > 0 ? `Age ${age}` : "Year"}
+                                    {age > 0 ? (isMini ? `${age}` : `Age ${age}`) : "Year"}
                                 </span>
                             </>
                         );
@@ -178,7 +178,7 @@ export function PlayerProfileCard({
                 </div>
                 <div className="player-profile-stat">
                     <span className="player-profile-stat__value">{profile.level || "-"}</span>
-                    <span className="player-profile-stat__label">Level</span>
+                    {!isMini && <span className="player-profile-stat__label">Level</span>}
                 </div>
                 <div className="player-profile-stat">
                     <span className="player-profile-stat__value">
@@ -190,9 +190,9 @@ export function PlayerProfileCard({
                             return sizeMap[profile.tshirtSize || ""] || profile.tshirtSize || "-";
                         })()}
                     </span>
-                    <span className="player-profile-stat__label">T-Shirt</span>
+                    {!isMini && <span className="player-profile-stat__label">T-Shirt</span>}
                 </div>
-                {showEntry && (
+                {showEntry && !isMini && (
                     <div className="player-profile-stat">
                         <span className="player-profile-stat__value">{profile.participationCount || 0}</span>
                         <span className="player-profile-stat__label">Entry</span>

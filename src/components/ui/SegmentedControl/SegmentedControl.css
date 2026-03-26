@@ -85,3 +85,10 @@
     color: #000000;
     box-shadow: var(--shadow-glow);
 }
+
+/* ── Orange Variant ── */
+.segmented-control--orange .segmented-control__tab--active {
+    background: var(--color-accent-orange);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(255, 107, 61, 0.3);
+}

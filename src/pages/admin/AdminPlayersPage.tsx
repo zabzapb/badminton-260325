@@ -68,7 +68,11 @@ export default function PlayerListPage() {
         
         if (searchTerm) return matchesSearch;
         
-        const matchesLevel = selectedLevel === "All" || (p.level || "D") === selectedLevel;
+        const matchesLevel = selectedLevel === "All" 
+            ? true 
+            : selectedLevel === "Manager"
+                ? (p.isMaster || p.isManager)
+                : (p.level || "D") === selectedLevel;
         return matchesLevel;
     });
 
@@ -91,7 +95,7 @@ export default function PlayerListPage() {
                             </div>
                         )}
                         <span style={{ color: '#C7C7CC', fontWeight: 300, margin: '0 4px' }}>|</span>
-                        {["All", "S", "A", "B", "C", "D", "E", "F"].map(lv => (
+                        {["All", "S", "A", "B", "C", "D", "E", "F", "Manager"].map(lv => (
                             <button 
                                 key={lv}
                                 onClick={() => setSelectedLevel(lv)} 

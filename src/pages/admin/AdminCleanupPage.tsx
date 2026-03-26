@@ -55,7 +55,10 @@ export default function CleanupPage() {
                     level: primary.level || other.level,
                     club: primary.club || other.club,
                     tshirtSize: primary.tshirtSize || other.tshirtSize,
-                    nickname: primary.nickname || other.nickname
+                    nickname: primary.nickname || other.nickname,
+                    // [Fix] Keep master/manager roles if either account has them
+                    isMaster: primary.isMaster || other.isMaster || false,
+                    isManager: primary.isManager || other.isManager || false
                 };
                 
                 // 2. Save Merged

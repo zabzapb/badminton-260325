@@ -23,7 +23,7 @@ export const EventSelection: React.FC<Props> = ({ selectedEvents, toggleEvent })
                             <Icon 
                                 name={ev.icon} 
                                 size={16} 
-                                color={isActive ? '#fff' : '#8E8E93'} 
+                                color={isActive ? '#FFFFFF' : '#7F7F7F'} 
                             /> 
                             {ev.name}
                         </div>

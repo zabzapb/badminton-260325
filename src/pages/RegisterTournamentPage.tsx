@@ -24,13 +24,13 @@ export default function TournamentRegistrationPage() {
     
     const formHook = useTournamentForm(); 
     const { formData, setFormData } = formHook;
-    const { tournaments, apps, fetchingApps, loadApplications, saveTournamentData } = useTournamentData();
+    const { tournaments, apps, fetchingApps, loadApplications, saveTournamentData, deleteTournamentData } = useTournamentData();
 
     useEffect(() => {
-        if (activeTab === 'applicants' && formData.id) {
+        if (formData.id) {
             loadApplications(formData.id);
         }
-    }, [activeTab, formData.id, loadApplications]);
+    }, [formData.id, loadApplications]);
 
     const handleSave = async () => {
         if (!formData.name) return alert("대회 이름을 입력해주세요.");
@@ -39,6 +39,29 @@ export default function TournamentRegistrationPage() {
             alert("대회 정보가 저장되었습니다.");
             setView("list"); 
             setFormData(INITIAL_FORM_DATA); 
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!formData.id) return;
+        
+        // 삭제 전 최신 신청자 수 다시 확인 (동기화 이슈 방지)
+        const { getApplicationsByTournament } = await import("@/lib/firebase/applicationService");
+        const latestApps = await getApplicationsByTournament(formData.id);
+        
+        if (latestApps.length > 0) {
+            if (!window.confirm(`[${formData.name}] 참가신청자가 ${latestApps.length}명 있습니다. 삭제를 계속하시겠습니까?\n(삭제 시 신청 내역도 함께 관리되지 않습니다.)`)) return;
+        }
+        
+        if (!window.confirm("정말 대회를 삭제하시겠습니까? (이 작업은 되돌릴 수 없습니다.)")) return;
+        
+        const res = await deleteTournamentData(formData.id);
+        if (res.success) {
+            alert("대회가 삭제되었습니다.");
+            setView("list");
+            setFormData(INITIAL_FORM_DATA);
+        } else {
+            alert(res.error);
         }
     };
 
@@ -77,14 +100,7 @@ export default function TournamentRegistrationPage() {
             <AppHeader />
             <div className="app-body">
                 {/* Hero / Header Section for Form */}
-                <div className="profile-management-hero" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                    <button 
-                        type="button" 
-                        onClick={() => setView("list")} 
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                    >
-                        <Icon name="arrow-left" size={24} />
-                    </button>
+                <div className="profile-management-hero" style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <h2 className="app-body-title" style={{ marginBottom: 0 }}>
                             {formData.id ? "대회 정보 수정" : "신규 대회 등록"}
@@ -99,8 +115,7 @@ export default function TournamentRegistrationPage() {
                 <div className="input-group" style={{ marginBottom: '32px' }}>
                     <label className="input-label">대회명</label>
                     <input 
-                        className="input-field"
-                        style={{ fontSize: '20px', fontWeight: 700, border: 'none', borderBottom: '2px solid #000', borderRadius: 0, padding: '0 4px', height: '48px' }}
+                        className="title-input-field"
                         placeholder="대회 이름을 입력하세요"
                         value={formData.name} 
                         onChange={e => setFormData({ ...formData, name: e.target.value })} 
@@ -113,6 +128,7 @@ export default function TournamentRegistrationPage() {
                         tabs={TABS} 
                         activeId={activeTab} 
                         onChange={setActiveTab}
+                        orange
                         fullWidth
                     />
                 </div>
@@ -140,7 +156,7 @@ export default function TournamentRegistrationPage() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                             <MatrixSetupSection formHook={formHook} />
                             <div style={{ borderTop: '1px solid #eee', paddingTop: '32px' }}>
-                                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>설정 미리보기 (Matrix)</h3>
+                                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>Tournament Matrix Summary</h3>
                                 <MatrixSummary 
                                     formData={formData} 
                                     onResetAllSegments={formHook.handleResetAllSegmentsForEvent} 
@@ -172,8 +188,17 @@ export default function TournamentRegistrationPage() {
                         style={{ flex: 1, background: '#FF6B3D', border: 'none' }} 
                         onClick={handleSave}
                     >
-                        {formData.id ? "정보 수정 완료" : "대회 등록하기"}
+                        {formData.id ? "저장" : "대회 등록하기"}
                     </button>
+                    {formData.id && (
+                        <button 
+                            type="button" 
+                            style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#F2F2F7', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            onClick={handleDelete}
+                        >
+                            <Icon name="trash" size={20} color="#FF3B30" />
+                        </button>
+                    )}
                 </footer>
                 
                 <div style={{ height: '60px' }} />

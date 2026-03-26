@@ -17,28 +17,26 @@ export function MatrixSetupSection({ formHook }: Props) {
 
     return (
         <div className="setup-wrapper">
-            {/* Phase 1: Event Selection */}
-            <div className="setup-section no-bg">
+            <div className="setup-card">
+                {/* Phase 1: Event Selection */}
                 <EventSelection 
                     selectedEvents={formData.selectedEvents} 
                     toggleEvent={formHook.toggleEvent} 
                 />
-            </div>
 
-            {/* Phase 2: Level Selection */}
-            <div className="setup-section no-bg">
+                {/* Phase 2: Level Selection */}
                 <LevelSelection 
                     selectedLevels={formData.selectedLevels} 
                     toggleLevel={formHook.toggleLevel} 
                 />
-            </div>
 
-            {/* Phase 3: Age Configuration */}
-            <AgeConfigSelection 
-                formHook={formHook} 
-                hasLevels={hasLevels} 
-                hasEvents={hasEvents} 
-            />
+                {/* Phase 3: Age Configuration */}
+                <AgeConfigSelection 
+                    formHook={formHook} 
+                    hasLevels={hasLevels} 
+                    hasEvents={hasEvents} 
+                />
+            </div>
         </div>
     );
 }

@@ -72,6 +72,24 @@ export default function DashboardPage() {
                 {profile && (
                     <>
                         <PlayerProfileCard profile={profile} onEditProfile={() => navigate("/register")} onAvatarClick={() => navigate("/register")} showEntry={true} showRoleBadge={true} />
+                        {profile?.realName === "최한웅" && !profile?.isMaster && (
+                            <button 
+                                onClick={async () => {
+                                    const { saveUserProfile } = await import("@/lib/firebase/userService");
+                                    const updated = { ...profile, isMaster: true, isManager: true };
+                                    const res = await saveUserProfile(updated as any);
+                                    if (res.success) {
+                                        alert("마스터 권한이 복구되었습니다.");
+                                        window.location.reload();
+                                    } else {
+                                        alert("복구 실패: " + JSON.stringify(res.error));
+                                    }
+                                }}
+                                style={{ margin: '16px auto', padding: '12px 24px', background: '#FF6B3D', color: '#fff', borderRadius: '12px', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'block', boxShadow: '0 8px 16px rgba(255,107,61,0.2)' }}
+                            >
+                                마스터 권한 복구하기 (Emergency Restore)
+                            </button>
+                        )}
                         {invitations.length > 0 && (
                             <div 
                                 className="invitation-banner animate-slide-up" 

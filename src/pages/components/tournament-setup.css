@@ -9,6 +9,17 @@
     margin-bottom: 32px;
 }
 
+.setup-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #E5E5EA;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
 .setup-step .input-label {
     color: #8E8E93;
     margin-bottom: 16px;
@@ -24,54 +35,55 @@
 
 .event-chip {
     height: 48px;
-    border-radius: 12px;
-    border: 1px solid #E5E5EA;
-    background: #fff;
-    color: #282828;
+    border-radius: 24px;
+    border: 1px solid #3F3F3F;
+    background: #F2F2F2;
+    color: #7F7F7F;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
 }
 
 .event-chip.active {
     background: #FF6B3D;
-    color: #fff;
-    font-weight: 700;
+    color: #FFFFFF;
+    font-weight: 800;
     border-color: #FF6B3D;
 }
 
+
+
 .age-chip-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-}
-
-.age-chip-grid.cols-4 {
     grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
 }
 
 .age-option-chip {
-    height: 44px;
+    height: 48px;
     border-radius: 12px;
-    border: 1px solid #E5E5EA;
-    background: #fff;
-    color: #282828;
-    font-weight: 500;
+    border: none;
+    background: #F2F2F2;
+    color: #7F7F7F;
+    font-size: 14px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .age-option-chip.is-selected {
     background: #FF6B3D;
-    color: #fff;
-    font-weight: 700;
-    border-color: #FF6B3D;
+    color: #FFFFFF;
+    font-weight: 800;
 }
+
+
 
 .age-config-selection-wrapper {
     transition: opacity 0.3s ease;

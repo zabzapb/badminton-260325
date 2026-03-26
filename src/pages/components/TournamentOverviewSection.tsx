@@ -18,27 +18,29 @@ export const TournamentOverviewSection: React.FC<props> = ({
             {/* Region Type Selection */}
             <div className="input-group">
                 <label className="input-label">대회 구분</label>
-                <div style={{ display: 'flex', background: '#F2F2F7', borderRadius: '16px', padding: '6px', gap: '4px' }}>
+                <div style={{ display: 'flex', background: '#F2F2F7', borderRadius: '32px', padding: '6px', gap: '4px' }}>
                     <button 
                         type="button" 
                         onClick={() => setFormData({ ...formData, regionType: 'local' })} 
                         style={{ 
-                            flex: 1, height: '44px', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', 
-                            background: formData.regionType === 'local' ? '#000' : 'transparent', 
+                            flex: 1, height: '44px', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer', 
+                            background: formData.regionType === 'local' ? 'var(--color-accent-orange)' : 'transparent', 
                             color: formData.regionType === 'local' ? '#fff' : '#8E8E93',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            boxShadow: formData.regionType === 'local' ? '0 4px 12px rgba(255,107,61,0.2)' : 'none'
                         }}
                     >
-                        시·구·군 (로컬)
+                        시·구·군
                     </button>
                     <button 
                         type="button" 
                         onClick={() => setFormData({ ...formData, regionType: 'national' })} 
                         style={{ 
-                            flex: 1, height: '44px', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', 
-                            background: formData.regionType === 'national' ? '#000' : 'transparent', 
+                            flex: 1, height: '44px', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer', 
+                            background: formData.regionType === 'national' ? 'var(--color-accent-orange)' : 'transparent', 
                             color: formData.regionType === 'national' ? '#fff' : '#8E8E93',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            boxShadow: formData.regionType === 'national' ? '0 4px 12px rgba(255,107,61,0.2)' : 'none'
                         }}
                     >
                         전국 대회

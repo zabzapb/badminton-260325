@@ -103,6 +103,29 @@
     border-color: #000;
 }
 
+.title-input-field {
+    width: 100%;
+    font-size: 24px;
+    font-weight: 800;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #E5E5EA;
+    padding: 8px 0;
+    color: #000;
+    outline: none;
+    transition: all 0.2s;
+    border-radius: 0;
+}
+
+.title-input-field:focus {
+    border-bottom-color: #FF6B3D;
+}
+
+.title-input-field::placeholder {
+    color: #C7C7CC;
+    font-weight: 300;
+}
+
 /* ── Inline Layout Components ── */
 .inline-form-row {
     display: flex;

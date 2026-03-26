@@ -12,7 +12,6 @@ export function MatrixSummary({ formData, onResetAllSegments, onToggleAgeGroup }
 
     return (
         <div className="confirmed-matrix-view" style={{ marginTop: '40px', background: '#1C1C1E', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h4 style={{ color: '#fff', fontSize: '18px', fontWeight: 700, marginBottom: '24px' }}>Tournament Matrix Summary</h4>
             {[
                 { title: "MD (남복)", eCodes: ["MD"], lvCodes: ["S", "A", "B", "C", "D", "E", "F"] },
                 { title: "WD (여복)", eCodes: ["WD"], lvCodes: ["S", "A", "B", "C", "D", "E", "F"] },

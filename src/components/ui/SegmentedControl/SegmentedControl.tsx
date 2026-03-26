@@ -32,6 +32,8 @@ export interface SegmentedControlProps {
     fullWidth?: boolean;
     /** 액센트(네온) 활성 탭 스타일 */
     accent?: boolean;
+    /** 오렌 활성 탭 스타일 */
+    orange?: boolean;
     /** aria-label */
     ariaLabel?: string;
 }
@@ -42,6 +44,7 @@ export function SegmentedControl({
     onChange,
     fullWidth = false,
     accent = false,
+    orange = false,
     ariaLabel = "탭 내비게이션",
 }: SegmentedControlProps) {
     const [internalActive, setInternalActive] = useState(
@@ -61,6 +64,7 @@ export function SegmentedControl({
                 "segmented-control",
                 fullWidth ? "segmented-control--full" : "",
                 accent ? "segmented-control--accent" : "",
+                orange ? "segmented-control--orange" : "",
             ]
                 .filter(Boolean)
                 .join(" ")}

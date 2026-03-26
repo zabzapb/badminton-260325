@@ -78,7 +78,9 @@ export const saveUserProfile = async (profile: UserProfile) => {
         avatarChangeCount: profile.avatarChangeCount ?? originalData.avatarChangeCount ?? 0,
         phone: cleanPhone,
         id: uid,
-        isVerified: profile.isVerified || originalData.isVerified || false, // [Heuristic] Keep verified status if either is true
+        isVerified: profile.isVerified ?? originalData.isVerified ?? false, 
+        isMaster: profile.isMaster ?? originalData.isMaster ?? false,
+        isManager: profile.isManager ?? originalData.isManager ?? false,
         updatedAt: new Date().toISOString(),
     };
 
