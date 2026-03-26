@@ -184,10 +184,6 @@ export const ApplicationFields: React.FC<ApplicationFieldsProps> = ({
                                             <div style={{ background: '#fff', borderRadius: '12px', border: status === "waiting_partner" ? '2px solid #C7C7CC' : '2px solid #000', overflow: 'hidden', position: 'relative', boxShadow: '0 8px 16px rgba(0,0,0,0.08)' }}>
                                                 <PlayerProfileCard 
                                                     profile={member as any} variant="mini" theme="light"
-                                                    onDelete={isAppOwner ? () => onPartnerSelect?.(null) : undefined}
-                                                    onBadgeClick={showSelectionOptions && isApplicant ? () => onPartnerSelect?.(null) : (isApplicant ? undefined : onBadgeClick)} 
-                                                    badgeColor={showSelectionOptions && isApplicant ? "#FF6B3D" : undefined}
-                                                    isCircle={showSelectionOptions && isApplicant} 
                                                     style={{ border: 'none', background: 'transparent' }} 
                                                     isPending={status === "waiting_partner"}
                                                 />

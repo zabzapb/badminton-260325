@@ -285,7 +285,7 @@
     grid-template-columns: auto 1fr;
     grid-template-rows: auto auto;
     align-items: center;
-    column-gap: var(--sp-6);
+    column-gap: var(--sp-4);
     row-gap: 2px;
     padding: var(--sp-5);
     background: #1C1C1E; /* Black background from image */

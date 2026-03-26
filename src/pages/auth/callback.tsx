@@ -66,14 +66,12 @@ export default function NaverAuthCallback() {
                     setStep('redirecting');
                     clearTimeout(safetyTimeout);
                     
-                    // Small delay to let user see success state before redirecting (feels smoother)
-                    setTimeout(() => {
-                        if (isNewUser) {
-                            navigate('/register', { replace: true });
-                        } else {
-                            navigate('/dashboard', { replace: true });
-                        }
-                    }, 500);
+                    // Proceed immediately for maximum speed as requested
+                    if (isNewUser) {
+                        navigate('/register', { replace: true });
+                    } else {
+                        navigate('/dashboard', { replace: true });
+                    }
                 } else {
                     setStatus('error');
                 }
