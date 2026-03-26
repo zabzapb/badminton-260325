@@ -10,6 +10,7 @@ import { logger } from "@/core/utils/logger";
 import { enqueueSyncTask } from "@/core/queue/syncQueue";
 
 import { addData, getData } from "@/lib/firebase/firestore";
+import { findUserByPhone } from "@/lib/firebase/userService";
 
 /**
  * Executes post-authentication logic with synchronization and trace logging.
@@ -23,27 +24,58 @@ export async function finalizeLogin(profile: UserProfile): Promise<{ success: bo
     const { setProfile, persistProfile } = useUserStore.getState();
     const { setProfileLocally, loadDashboard } = useDashboardStore.getState();
 
-    // 1. [Identity Management] Ensure Provider-based Unique ID (NV_xxx)
+    // 1. [Identity Management] Establish Provider ID (NV_xxx)
     const providerId = profile.id.startsWith('NV_') ? profile.id : `NV_${profile.id}`;
+    const cleanPhone = profile.phone.replace(/[^0-9]/g, "");
     
-    // 2. [Upsert] Load existing profile or prepare new one
-    const existing = await getData('players', providerId);
-    const existingData = existing.success ? (existing.data as any) : {};
+    // 2. [Resolution] Search both for direct ID (NV_) and secondary Guest (p_)
+    const [idLookup, phoneLookup] = await Promise.all([
+      getData('players', providerId),
+      findUserByPhone(cleanPhone)
+    ]);
     
-    // [Check] Consider new user if non-existent or level/tshirt missing
-    const isNewUser = !existing.success || !existingData.level;
+    let existingData: any = {};
+    let guestIdToDelete: string | null = null;
+    
+    // Priority 1: Existing Naver Account
+    if (idLookup.success && idLookup.data) {
+      existingData = idLookup.data;
+    } 
+    
+    // Priority 2: Guest Account (Excel Upload)
+    if (phoneLookup.success && Array.isArray(phoneLookup.data)) {
+      const guest = phoneLookup.data.find((u: any) => u.id.startsWith('p_'));
+      if (guest) {
+        // [Migration] Combine non-auth fields (level, club, etc.) from guest if not in Naver record
+        existingData = { ...guest, ...existingData };
+        guestIdToDelete = guest.id;
+      }
+    }
+    
+    // [Check] Consider new user if non-existent or level/tshirt missing (missing core preference)
+    const isNewUser = (!idLookup.success || !idLookup.data) && (!existingData.level);
     
     const now = new Date().toISOString();
+    
+    // 3. [Overwrite] Fresh Naver profile (profile) MUST overwrite existing data for identity fields
     const finalProfile: UserProfile = {
-      ...profile,
-      ...existingData,
+      ...existingData,                // Old meta, level, club
+      ...profile,                     // Fresh Name, Gender, Phone, Birth (OVERWRITE)
       id: providerId,
+      isVerified: true,               // Force verified
       createdAt: existingData.createdAt || now,
       updatedAt: now,
       lastLoginAt: now,
     };
 
-    // 3. [Firestore Write] Sync to Real DB
+    // 4. [Clean up] Redundant Guest Data
+    if (guestIdToDelete && guestIdToDelete !== providerId) {
+      const { deleteUserProfile } = await import("@/lib/firebase/userService");
+      await deleteUserProfile(guestIdToDelete);
+      logger.log('INFO', { event: 'IDENTITY_MERGE', from: guestIdToDelete, to: providerId, phone: cleanPhone });
+    }
+
+    // 5. [Firestore Write] Save Verified Record
     const dbResult = await addData('players', providerId, finalProfile);
     
     if (!dbResult.success) {
