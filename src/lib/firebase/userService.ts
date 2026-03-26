@@ -72,7 +72,7 @@ export const saveUserProfile = async (profile: UserProfile) => {
     const finalData = {
         ...originalData,
         ...profile,
-        nickname: profile.nickname || originalData.nickname || "", // [Fallback] Prevent undefined/null
+        nickname: profile.nickname ?? originalData.nickname ?? "", // [Fix] Allow empty string, fallback if undefined
         birthDate: profile.birthDate || (profile.birthYear ? `${profile.birthYear}-01-01` : ""),
         avatarUrl: avatarUrl || "", // ensure some string
         avatarChangeCount: profile.avatarChangeCount ?? originalData.avatarChangeCount ?? 0,

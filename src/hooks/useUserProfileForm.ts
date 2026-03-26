@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "@/core/store/userStore";
+import { useDashboardStore } from "@/store/useDashboardStore";
 import { saveUserProfile, generateUserUid } from "@/lib/firebase/userService";
 import { getRandomAvatarByGender } from "@/lib/avatar";
 import { logger } from "@/core/utils/logger";
@@ -73,7 +74,10 @@ export const useUserProfileForm = () => {
             setProfile(finalProfile as any);
             await persistProfile(finalProfile as any);
             
-            // 3. Fallback Local Storage
+            // 3. Sync Dashboard Store if already loaded
+            useDashboardStore.getState().setProfileLocally(finalProfile as any);
+            
+            // 4. Fallback Local Storage
             localStorage.setItem("hctc_user_profile", JSON.stringify(finalProfile));
             
             alert("저장 완료");

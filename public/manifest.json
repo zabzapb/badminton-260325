@@ -1,0 +1,21 @@
+{
+  "name": "한콕두콕 (HCTC) - 플레이어 프로필 관리",
+  "short_name": "한콕두콕",
+  "description": "한콕두콕 배드민턴 모임 회원을 위한 마포구배드민턴협회 대회 선수 등록 서비스",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/hctc-favicon-s.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/hctc-favicon-m.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

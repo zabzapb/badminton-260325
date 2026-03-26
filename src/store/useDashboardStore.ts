@@ -5,6 +5,7 @@ import { getUserProfile } from '@/lib/firebase/userService';
 import { getUserNotifications, markNotificationAsRead } from '@/lib/firebase/notificationService';
 import { AppNotification } from '@/lib/types';
 import { PlayerProfile } from '@/components/ui/PlayerProfileCard/PlayerProfileCard';
+import { useUserStore } from '@/core/store/userStore';
 
 interface DashboardState {
   profile: PlayerProfile | null;
@@ -48,6 +49,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         if (fbProfile.success && fbProfile.data) {
           currentProfile = fbProfile.data as PlayerProfile;
           set({ profile: currentProfile });
+          // [Sync] Update primary user store
+          useUserStore.getState().setProfile(currentProfile as any);
           localStorage.setItem("hctc_user_profile", JSON.stringify(currentProfile));
         }
       }

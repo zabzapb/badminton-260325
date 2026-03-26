@@ -124,6 +124,26 @@ export default function CleanupPage() {
         setPlayers(all);
     };
 
+    const handleDeleteAllGuests = async () => {
+        const toDelete = players.filter(p => !p.isMaster && !p.isManager && !p.isVerified);
+        if (toDelete.length === 0) return alert("삭제할 게스트 대상이 없습니다.");
+        
+        if (!window.confirm(`${toDelete.length}명의 모든 게스트를 일괄 삭제하시겠습니까?\n이 작업은 되돌릴 수 없으며 모든 데이터가 영구 삭제됩니다.`)) return;
+        
+        setStatus("게스트 일괄 삭제 중...");
+        let count = 0;
+
+        for (const p of toDelete) {
+            await deleteUserProfile(p.id);
+            count++;
+            setStatus(`삭제 중... (${count}/${toDelete.length})`);
+        }
+
+        setStatus(`완료! ${count}명의 게스트가 일괄 삭제되었습니다.`);
+        const all = await getAllUsers();
+        setPlayers(all);
+    };
+
     const handleMigrateBirthDate = async () => {
         if (!window.confirm(`현재 등록된 ${players.length}명의 데이터 중 생년월일이 누락된 항목을 보정하시겠습니까?\n(YYYY-01-01 형식으로 채워집니다)`)) return;
         
@@ -153,19 +173,27 @@ export default function CleanupPage() {
                 <h2 className="app-body-title">데이터 정리 및 보정</h2>
                 
                 <div style={{ marginBottom: '32px', background: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #E5E5EA' }}>
-                    <h3 style={{ fontSize: '18px', marginBottom: '12px' }}>1. 플레이어 권한 일괄 부여</h3>
+                    <h3 style={{ fontSize: '18px', marginBottom: '12px' }}>1. 게스트 계정 관리</h3>
                     <p style={{ color: '#666', marginBottom: '16px' }}>
-                        현재 '게스트' 상태인 플레이어들을 모두 **'Player(인증회원)'** 상태로 일괄 변경합니다.<br/>
-                        (엑셀로 대량 등록한 선수들을 정식 회원으로 전환할 때 사용합니다.)
+                        현재 '게스트' 상태인 플레이어들을 일괄 관리합니다.<br/>
+                        (네이버 인증을 하지 않은 엑셀 등록 선수가 대상입니다.)
                     </p>
-                    <button 
-                        onClick={handleMigrateToPlayer}
-                        style={{ background: '#34C759', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                        모든 게스트를 'Player'로 일괄 변경
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                            onClick={handleMigrateToPlayer}
+                            style={{ background: '#34C759', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                            모든 게스트를 'Player'로 변경
+                        </button>
+                        <button 
+                            onClick={handleDeleteAllGuests}
+                            style={{ background: '#FF3B30', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                            모든 게스트 일괄 삭제
+                        </button>
+                    </div>
                     <p style={{ fontSize: '12px', color: '#8E8E93', marginTop: '8px' }}>
-                        * 대상 인원: {players.filter((p: UserProfile) => !p.isMaster && !p.isManager && !p.isVerified).length}명
+                        * 게스트 대상 인원: {players.filter((p: UserProfile) => !p.isMaster && !p.isManager && !p.isVerified).length}명
                     </p>
                 </div>
 

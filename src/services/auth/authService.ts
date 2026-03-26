@@ -10,7 +10,8 @@ import { logger } from "@/core/utils/logger";
 import { enqueueSyncTask } from "@/core/queue/syncQueue";
 
 import { addData, getData } from "@/lib/firebase/firestore";
-import { findUserByPhone } from "@/lib/firebase/userService";
+import { findUserByPhone, getAllUsers } from "@/lib/firebase/userService";
+import { getRandomAvatarByGender } from "@/lib/avatar";
 
 /**
  * Executes post-authentication logic with synchronization and trace logging.
@@ -57,10 +58,20 @@ export async function finalizeLogin(profile: UserProfile): Promise<{ success: bo
     
     const now = new Date().toISOString();
     
-    // 3. [Overwrite] Fresh Naver profile (profile) MUST overwrite existing data for identity fields
+    // 3. [Overwrite] Fresh Naver profile (profile) OVERWRITE existing data for identity fields
+    // EXCEPT for avatarUrl - we preserve the existing HCTC avatar if one was chosen/shuffled.
+    let avatarUrl = existingData.avatarUrl || profile.avatarUrl;
+    if (!avatarUrl) {
+      const allUsers = await getAllUsers();
+      const usedAvatars = allUsers.map(u => u.avatarUrl).filter((url): url is string => !!url);
+      avatarUrl = getRandomAvatarByGender(profile.gender as any || 'M', usedAvatars);
+    }
+
     const finalProfile: UserProfile = {
-      ...existingData,                // Old meta, level, club
-      ...profile,                     // Fresh Name, Gender, Phone, Birth (OVERWRITE)
+      ...existingData,                // Old meta, level, club, avatarUrl
+      ...profile,                     // Fresh Name, Gender, Phone, Birth
+      avatarUrl: avatarUrl,           // Preserved or Randomly assigned
+      nickname: existingData.nickname || profile.nickname, // Keep HCTC nickname if it exists
       id: providerId,
       isVerified: true,               // Force verified
       createdAt: existingData.createdAt || now,
