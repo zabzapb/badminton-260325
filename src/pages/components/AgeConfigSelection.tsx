@@ -49,7 +49,7 @@ export const AgeConfigSelection: React.FC<Props> = ({ formHook, hasLevels, hasEv
     };
 
     return (
-        <div className={`age-config-selection-wrapper ${!(hasLevels && hasEvents) ? 'disabled' : ''}`}>
+        <div className={`age-config-selection-wrapper setup-step ${!(hasLevels && hasEvents) ? 'disabled' : ''}`}>
             <h4 className="input-label">3. 연령대 설정</h4>
             
             {!(hasLevels && hasEvents) && (

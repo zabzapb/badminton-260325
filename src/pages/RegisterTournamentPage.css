@@ -239,49 +239,6 @@
     margin-bottom: 16px;
 }
 
-.event-pool {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    width: 100%;
-}
-
-.event-chip {
-    padding: 12px 0;
-    border-radius: 12px;
-    /* Changed from tag/pill to matching field round for better grid look */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.setup-section .event-chip {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
-}
-
-.event-chip.active {
-    background: #FF6B3D !important;
-    color: #fff !important;
-    border-color: #FF6B3D !important;
-    font-weight: 700;
-}
-
-.setup-section .event-chip.active {
-    background: #fff;
-    color: #000;
-    border-color: #fff;
-}
-
 .age-mode-selector {
     display: flex;
     background: rgba(255, 255, 255, 0.1);
@@ -405,18 +362,6 @@
 
 .btn-delete-chip:hover {
     opacity: 0.6;
-}
-
-.age-option-chip.is-selected {
-    background: #000;
-    color: #fff;
-    border-color: #000;
-}
-
-.setup-section .age-option-chip.is-selected {
-    background: #fff;
-    color: #000;
-    border-color: #fff;
 }
 
 .btn-confirm-matrix {
