@@ -11,36 +11,38 @@
     padding: 32px;
 }
 
-.loading-logo-container {
-    position: relative;
-    width: 240px;
-    height: 240px;
-    margin: 0 auto 24px;
+.callback-loading-ui-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #fff; /* GIF와 동일한 배경색 (흰색으로 가정) */
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1000;
 }
 
-.loading-logo-img {
+.loading-bg-img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: contain; /* 이미지 비율 유지하며 꽉 채움 */
 }
 
-.loading-text-overlay {
+.loading-text-overlay-centered {
     position: absolute;
-    top: 50%;
+    bottom: 25%; /* 문구를 이미지 하단부에 위치 */
     left: 50%;
-    transform: translate(-50%, -52%);
+    transform: translateX(-50%);
     text-align: center;
-    color: #000;
-    font-size: 12px;
-    font-weight: 500;
+    color: #1C1C1E;
+    font-size: 13px; /* 12-13px */
+    font-weight: 600;
     line-height: 1.6;
+    letter-spacing: -0.3px;
     pointer-events: none;
-    white-space: pre-line;
     width: 100%;
-    letter-spacing: -0.2px;
 }
 
 .callback-status {
