@@ -57,6 +57,7 @@ export interface TournamentApplication {
   };
   applicantInfo?: any; // Added applicantInfo property
   status: "pending" | "partner_required" | "waiting_partner" | "confirmed" | "cancelled" | "rejected";
+  paymentStatus: "pending" | "confirmed"; // [추가] 관리자 수기 입금 확인 상태
 
   createdAt: string;
   updatedAt?: string;

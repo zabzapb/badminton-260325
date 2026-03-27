@@ -173,6 +173,7 @@ export default function TournamentRegistrationPage() {
                             onDownloadExcel={() => {
                                 alert("엑셀 다운로드 기능은 준비 중입니다.");
                             }} 
+                            onRefresh={() => formData.id && loadApplications(formData.id)}
                         />
                     )}
                 </div>

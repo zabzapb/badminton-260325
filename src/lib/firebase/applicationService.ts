@@ -188,6 +188,21 @@ export const getApplicationsForTournaments = async (tournamentIds: string[]) => 
     return [];
   }
 };
+// [System] 입금 확인 상태 변경
+export const updatePaymentStatus = async (applicationId: string, paymentStatus: "pending" | "confirmed") => {
+  try {
+    const appRef = doc(db, COLLECTION_APPLICATIONS, applicationId);
+    await updateDoc(appRef, {
+      paymentStatus,
+      updatedAt: new Date().toISOString()
+    });
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error updating payment status:", error);
+    return { success: false, error: error.message };
+  }
+};
+
 // [System] 상태 변경 (Status Update)
 export const updateApplicationStatus = async (applicationId: string, status: string) => {
   try {

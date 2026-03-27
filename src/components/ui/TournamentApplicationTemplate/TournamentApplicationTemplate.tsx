@@ -91,12 +91,13 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
             ageGroupId: targetAgeObj.id, 
             tournamentBaseYear: tBaseYear, 
             appliedAge: tBaseYear - applicantBirthYear, 
-            appliedGrade: grade,
+            appliedGrade: profile.level || "D", // [수정] 종목 급수가 아닌 플레이어의 실제 급수 저장
             partnerId: partner?.id || partner?.phone?.replace(/[^0-9]/g, "") || null,
             partnerInfo: partner ? { ...partner, phone: partner.phone?.replace(/[^0-9]/g, "") } : null,
             applicantInfo: profile ? { ...profile, phone: profile.phone?.replace(/[^0-9]/g, "") } : null,
             status: isDoubles ? (!!partner ? "waiting_partner" : "partner_required") : "pending",
-            createdAt: new Date().toISOString(), // [수정] 필수 필드 추가
+            paymentStatus: "pending", // [추가] 초기 입금 상태는 대기
+            createdAt: new Date().toISOString(), 
             updatedAt: new Date().toISOString()
         };
 
