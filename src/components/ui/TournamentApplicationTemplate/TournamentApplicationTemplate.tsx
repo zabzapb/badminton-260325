@@ -19,18 +19,18 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
     const navigate = useNavigate();
     const { profile, tournament, loading, allUserApps, tournamentApps } = useTournamentApplication(id, isEdit);
     
+    // Global states (mostly for category calculation/drafting)
     // [추가] 마감일 및 종료일 체크 로직
     const now = new Date();
-    const isPastDeadline = tournament && (tournament as any).deadline 
+    const isPastDeadline = (tournament as any)?.deadline 
         ? now > new Date((tournament as any).deadline + "T23:59:59") 
         : false;
     
-    const lastDateStr = tournament && (tournament as any).eventDates?.length > 0 
+    const lastDateStr = (tournament as any)?.eventDates?.length > 0 
         ? (tournament as any).eventDates[(tournament as any).eventDates.length - 1] 
-        : (tournament as any).eventDate;
+        : (tournament as any)?.eventDate;
     const isFinished = lastDateStr ? now > new Date(lastDateStr + "T23:59:59") : false;
-    
-    // Global states (mostly for category calculation/drafting)
+
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
     const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
