@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import { saveTournament, getAllTournaments, deleteTournament } from "@/lib/firebase/tournamentService";
 import { getApplicationsByTournament } from "@/lib/firebase/applicationService";
-import { TournamentFormData } from "@/utils/tournamentUtils";
+import { calculateTournamentStats, TournamentFormData } from "@/utils/tournamentUtils";
 
 export const useTournamentData = () => {
     const navigate = useNavigate();
@@ -37,19 +37,10 @@ export const useTournamentData = () => {
         try {
             const fbTournaments = await getAllTournaments();
             const enrichedTournaments = await Promise.all(fbTournaments.map(async (t: any) => {
-                const tApps: any[] = await getApplicationsByTournament(t.id);
-                const mdCount = tApps.filter(a => a.category === "MD").length;
-                const wdCount = tApps.filter(a => a.category === "WD").length;
-                const xdCount = tApps.filter(a => a.category === "XD").length;
-                const sCount = tApps.filter(a => a.category === "MWS" || a.category === "S").length;
-                
-                const totalTeams = tApps.length;
-                const totalPlayers = tApps.reduce((acc, a) => {
-                    if (["MD", "WD", "XD"].includes(a.category)) return acc + 2;
-                    return acc + 1;
-                }, 0);
-
-                return { ...t, totalTeams, totalPlayers, mdCount, wdCount, xdCount, sCount };
+                const rawApps: any[] = await getApplicationsByTournament(t.id);
+                // [통합 통계 유틸 사용]
+                const stats = calculateTournamentStats(rawApps);
+                return { ...t, ...stats };
             }));
             setTournaments(enrichedTournaments);
         } catch (error) {

@@ -6,7 +6,7 @@ import { createNotification } from "@/lib/firebase/notificationService";
 import { findUserByPhone, getUserProfile } from "@/lib/firebase/userService";
 import { Icon } from "@/components/ui/Icon";
 import { TournamentApplication } from "@/lib/types";
-import { LEVEL_LIST } from "@/utils/tournamentUtils";
+import { LEVEL_LIST, calculateTournamentStats } from "@/utils/tournamentUtils";
 import { extractInfo, getPlayerAgeGroup, isAgeGroupValid, isGradeAllowed, getCategoryCode } from "@/utils/tournamentRules";
 import { useTournamentApplication } from "@/hooks/useTournamentApplication";
 import { TournamentInfoBanner } from "./TournamentInfoBanner";
@@ -135,12 +135,7 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
     }
 
     const tApps = tournamentApps || [];
-    const stats = { total: 0, md: 0, wd: 0, xd: 0, s: 0 };
-    tApps.forEach(a => {
-        const c = getCategoryCode(a.category);
-        if (c === "MD") stats.md++; else if (c === "WD") stats.wd++; else if (c === "XD") stats.xd++; else stats.s++;
-    });
-    stats.total = new Set(tApps.flatMap(a => [a.userId, a.partnerId].filter(Boolean))).size;
+    const stats = calculateTournamentStats(tApps);
 
     const tournamentCats = ((tournament as any).categories || []).filter((cat: any) => {
         if (!profile) return true;

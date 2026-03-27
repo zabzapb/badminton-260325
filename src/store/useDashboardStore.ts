@@ -6,6 +6,7 @@ import { getUserNotifications, markNotificationAsRead } from '@/lib/firebase/not
 import { AppNotification } from '@/lib/types';
 import { PlayerProfile } from '@/components/ui/PlayerProfileCard/PlayerProfileCard';
 import { useUserStore } from '@/core/store/userStore';
+import { calculateTournamentStats } from '@/utils/tournamentUtils';
 
 interface DashboardState {
   profile: PlayerProfile | null;
@@ -94,28 +95,17 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         const tApps = tMap.get(t.id) || [];
         const myApps = uniqueUserApps.filter((app: any) => app.tournamentId === t.id);
 
+        // [통합 통계 유틸 사용]
+        const stats = calculateTournamentStats(tApps);
 
-        // [수정] Invitations: waiting_partner status & I am the partner (UID 또는 전화번호 매칭)
+        // Invitations: waiting_partner status & I am the partner
         const currentCleanPhone = currentProfile?.phone?.replace(/[^0-9]/g, "");
         const tInvitations = myApps.filter((app: any) => {
            if (app.status !== "waiting_partner") return false;
-           // 내가 파트너인가?
            const cleanPartnerP = (app.partnerId || "").replace(/[^0-9]/g, "");
            const isPhoneMatch = cleanPartnerP && currentCleanPhone && cleanPartnerP === currentCleanPhone;
            const isUidMatch = app.partnerId && app.partnerId === currentProfile?.id;
            return isPhoneMatch || isUidMatch;
-        });
-
-        // Calculate Stats
-        const stats = { md: 0, wd: 0, xd: 0, s: 0 };
-        const uniqueParticipants = new Set<string>();
-        tApps.forEach((app: any) => {
-          if (app.userId) uniqueParticipants.add(app.userId);
-          if (app.partnerId) uniqueParticipants.add(app.partnerId);
-          if (["남복", "MD"].includes(app.category)) stats.md++;
-          else if (["여복", "WD"].includes(app.category)) stats.wd++;
-          else if (["혼복", "XD"].includes(app.category)) stats.xd++;
-          else if (["단식", "MS", "WS", "S"].includes(app.category)) stats.s++;
         });
 
         // Current User logic
@@ -124,7 +114,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         let joinedEvents: any[] = [];
         let appPartnerImages: string[] = [];
         
-        // [수정] 내 신청 건 중 '취소/거절'되지 않은 것만 표시 ('승인대기'도 포함하여 그레이로 표시)
         const activeMyApps = myApps.filter((app: any) => app.status !== "cancelled" && app.status !== "rejected");
 
         if (activeMyApps.length > 0) {
@@ -141,27 +130,21 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
                 type: app.category, 
                 ageGroup: parts[0] || "", 
                 level: parts[1] || "",
-                isPending: app.status === "waiting_partner" // [추가] 승인 대기 여부
+                isPending: app.status === "waiting_partner"
             };
           });
           
-          // [개선] 팀 구성 이미지를 아바타 2개로 (신청자 + 파트너)
           appPartnerImages = [];
           const firstApp = activeMyApps[0];
           if (firstApp) {
-             // 1. 파트너 아바타 (있다면)
              if (firstApp.partnerInfo?.avatarUrl) appPartnerImages.push(firstApp.partnerInfo.avatarUrl);
-             // 2. 신청자 아바타 (있다면)
              if (firstApp.applicantInfo?.avatarUrl) appPartnerImages.push(firstApp.applicantInfo.avatarUrl);
           }
         }
 
-
         return {
           ...t,
-          totalApplicants: uniqueParticipants.size,
-          totalTeams: tApps.length,
-          teamStats: stats,
+          ...stats,
           isJoined,
           isPartner,
           joinedEvents,

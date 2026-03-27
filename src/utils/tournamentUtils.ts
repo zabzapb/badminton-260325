@@ -143,3 +143,67 @@ export const formatNumber = (val: string) => {
     const num = val.replace(/[^0-9]/g, "");
     return num ? Number(num).toLocaleString() : "";
 };
+
+/**
+ * [통합 통계 로직] 대회 신청 내역에서 참가팀/인원/종목별 개수를 산출합니다.
+ * @param apps 신청 내역 배열
+ */
+export const calculateTournamentStats = (apps: any[]) => {
+    // 1. 취소/거절된 내역 제외
+    const activeApps = (apps || []).filter(a => a.status !== "cancelled" && a.status !== "rejected");
+
+    const stats = {
+        totalTeams: activeApps.length,
+        totalPlayers: 0,
+        mdCount: 0,
+        wdCount: 0,
+        xdCount: 0,
+        sCount: 0,
+        malePlayers: 0,
+        femalePlayers: 0,
+        uniqueParticipants: new Set<string>()
+    };
+
+    activeApps.forEach(app => {
+        // 참가자 유니크 카운트용 ID 수집
+        if (app.userId) stats.uniqueParticipants.add(app.userId);
+        if (app.partnerId) stats.uniqueParticipants.add(app.partnerId);
+
+        // 종목별 팀수 계산
+        const cat = app.category || "";
+        if (["MD", "남복"].includes(cat)) stats.mdCount++;
+        else if (["WD", "여복"].includes(cat)) stats.wdCount++;
+        else if (["XD", "혼복"].includes(cat)) stats.xdCount++;
+        else if (["S", "MS", "WS", "단식", "MWS"].includes(cat)) stats.sCount++;
+
+        // 인원수 합산
+        if (["MD", "WD", "XD", "남복", "여복", "혼복"].includes(cat)) {
+            stats.totalPlayers += 2;
+        } else {
+            stats.totalPlayers += 1;
+        }
+    });
+
+    return {
+        totalTeams: stats.totalTeams,
+        totalPlayers: stats.totalPlayers,
+        totalApplicants: stats.uniqueParticipants.size,
+        mdCount: stats.mdCount,
+        wdCount: stats.wdCount,
+        xdCount: stats.xdCount,
+        sCount: stats.sCount,
+        // Legacy aliases for UI compatibility
+        total: stats.uniqueParticipants.size,
+        md: stats.mdCount,
+        wd: stats.wdCount,
+        xd: stats.xdCount,
+        s: stats.sCount,
+        // UI 연동용 필드명 (호환성 유지)
+        teamStats: {
+            md: stats.mdCount,
+            wd: stats.wdCount,
+            xd: stats.xdCount,
+            s: stats.sCount
+        }
+    };
+};

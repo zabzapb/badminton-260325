@@ -54,7 +54,7 @@ export default function DashboardPage() {
                 userId: myApp.userId,
                 type: "warning",
                 tournamentId: t.id,
-                message: `⚠️ 파트너가 [${t.name}] 참가를 포기하였습니다. 새로운 파트너를 등록해 주세요.`,
+                message: `⚠️ 파트너가 [${t.name}] 참가를 포기하여 신청이 취소되었습니다. 번거로우시겠지만 대회 참가 신청을 다시 진행해 주세요.`,
                 isRead: false,
                 createdAt: new Date().toISOString()
             });

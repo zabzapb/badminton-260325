@@ -85,11 +85,7 @@ export const optOutPartner = async (applicationId: string) => {
   try {
     const appRef = doc(db, COLLECTION_APPLICATIONS, applicationId);
     await updateDoc(appRef, {
-      partnerId: null,
-      partnerInfo: null,
-      partnerAppliedAge: null,
-      partnerAppliedGrade: null,
-      status: "partner_required", // 신청자(Applicant)가 새 파트너를 구해야 함
+      status: "cancelled", // [수정] 하차 시 파트너 대기가 아닌 전체 취소로 변경
       updatedAt: new Date().toISOString()
     });
     return { success: true };
