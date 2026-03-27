@@ -19,6 +19,17 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
     const navigate = useNavigate();
     const { profile, tournament, loading, allUserApps, tournamentApps } = useTournamentApplication(id, isEdit);
     
+    // [추가] 마감일 및 종료일 체크 로직
+    const now = new Date();
+    const isPastDeadline = tournament && (tournament as any).deadline 
+        ? now > new Date((tournament as any).deadline + "T23:59:59") 
+        : false;
+    
+    const lastDateStr = tournament && (tournament as any).eventDates?.length > 0 
+        ? (tournament as any).eventDates[(tournament as any).eventDates.length - 1] 
+        : (tournament as any).eventDate;
+    const isFinished = lastDateStr ? now > new Date(lastDateStr + "T23:59:59") : false;
+    
     // Global states (mostly for category calculation/drafting)
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
@@ -43,6 +54,10 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
         const partner = data.partner;
         const appId = data.originalAppId || originalAppId;
 
+        if (isPastDeadline) {
+            return alert("접수 마감이 지나 신청 또는 수정을 할 수 없습니다.");
+        }
+
         if (!profile || !category || !grade || !ageGroup) {
             return alert("필수 항목 입력을 확인해 주세요.");
         }
@@ -60,6 +75,20 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
 
         const isDoubles = !["단식", "S", "MS", "WS"].includes(category) && !category.endsWith("단");
         if (isDoubles && !partner) return alert("복식 종목은 파트너 선택이 필수입니다.");
+
+        // [추가] 자강/준자강 특별 규정 검증
+        if (grade === "자강" || grade === "준자강") {
+            if (isDoubles && partner) {
+                const myLevel = profile.level || "D";
+                const pLevel = partner.level || "D";
+                const eliteCount = (myLevel === "Elite" ? 1 : 0) + (pLevel === "Elite" ? 1 : 0);
+
+                if (grade === "준자강" && eliteCount > 1) {
+                    return alert("준자강 종목은 '엘리트(선출) 최대 1명'팀만 신청 가능합니다.\n(현재 선출 수: " + eliteCount + "명)");
+                }
+                // 자강은 선출 수 제한 없음 (0, 1, 2 모두 가능하거나 보통 2명이지만 상향 지원 허용)
+            }
+        }
 
         if (partner) {
             const pPhone = partner.phone?.replace(/[^0-9]/g, "");
@@ -111,6 +140,9 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
     };
 
     const handleCancelApp = async (appId: string, appData: any) => {
+        if (isPastDeadline) {
+            return alert("접수 마감이 지나 신청을 취소할 수 없습니다.");
+        }
         if (!window.confirm("신청을 취소하시겠습니까?")) return;
         const res = await cancelApplication(appId);
         if (res.success) {
@@ -246,6 +278,7 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
                                 key={app.id} app={app} tournament={tournament} profile={profile} 
                                 tournamentCats={tournamentCats} tournamentApps={tApps}
                                 onApplySubmit={handleApplySubmit} onCancel={handleCancelApp}
+                                isPastDeadline={isPastDeadline}
                             />
                         ))}
 
@@ -254,6 +287,7 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
                         <ApplicationDraftCard 
                             id={id} tournament={tournament} profile={profile} tournamentCats={tournamentCats} 
                             allUserApps={allUserApps} tournamentApps={tApps} onApplySubmit={handleApplySubmit}
+                            isPastDeadline={isPastDeadline}
                         />
                     )}
                 </div>
@@ -268,7 +302,7 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
     );
 }
 
-function TournamentHistoryCard({ app, tournament, profile, tournamentCats, tournamentApps, onApplySubmit, onCancel }: any) {
+function TournamentHistoryCard({ app, tournament, profile, tournamentCats, tournamentApps, onApplySubmit, onCancel, isPastDeadline }: any) {
     const { ageGroup: initAge, grade: initGrade } = extractInfo(app.group);
     const isOwner = (app.userId === profile?.phone.replace(/[^0-9]/g, "")) || (app.userId === profile?.id);
     
@@ -329,7 +363,7 @@ function TournamentHistoryCard({ app, tournament, profile, tournamentCats, tourn
                 status={app.status} showSelectionOptions={editMode}
             />
 
-            {isOwner && editMode && (otherPlayer || !["남복", "MD", "여복", "WD", "혼복", "XD"].includes(getCategoryCode(category))) && (
+            {isOwner && editMode && !isPastDeadline && (otherPlayer || !["남복", "MD", "여복", "WD", "혼복", "XD"].includes(getCategoryCode(category))) && (
                 <button 
                     onClick={() => onApplySubmit({ category, grade, ageGroup, partner: otherPlayer, originalAppId: app.id })} 
                     style={{ 
@@ -340,11 +374,16 @@ function TournamentHistoryCard({ app, tournament, profile, tournamentCats, tourn
                     수정 정보로 신청
                 </button>
             )}
+            {isPastDeadline && isOwner && (
+                <div style={{ marginTop: '20px', padding: '12px', background: '#F2F2F7', borderRadius: '12px', fontSize: '13px', color: '#8E8E93', textAlign: 'center', fontWeight: 600 }}>
+                    접수가 마감되어 정보를 수정할 수 없습니다.
+                </div>
+            )}
         </div>
     );
 }
 
-function ApplicationDraftCard({ id, tournament, profile, tournamentCats, allUserApps, tournamentApps, onApplySubmit }: any) {
+function ApplicationDraftCard({ id, tournament, profile, tournamentCats, allUserApps, tournamentApps, onApplySubmit, isPastDeadline }: any) {
     const [category, setCategory] = useState<string | null>(null);
     const [grade, setGrade] = useState<string | null>(null);
     const [age, setAge] = useState<string | null>(null);
@@ -387,7 +426,22 @@ function ApplicationDraftCard({ id, tournament, profile, tournamentCats, allUser
                 ].filter(Boolean)}
                 showSelectionOptions={true}
             />
-            <button onClick={() => onApplySubmit({ category, grade, ageGroup: age, partner })} disabled={!category || !grade || !age} style={{ width: '100%', height: '60px', background: '#000', color: '#fff', borderRadius: '12px', fontWeight: 800, fontSize: '18px', marginTop: '32px' }}>신청 완료</button>
+            <button 
+                onClick={() => onApplySubmit({ category, grade, ageGroup: age, partner })} 
+                disabled={!category || !grade || !age || isPastDeadline} 
+                style={{ 
+                    width: '100%', height: '60px', 
+                    background: isPastDeadline ? '#C7C7CC' : '#000', 
+                    color: '#fff', 
+                    borderRadius: '12px', 
+                    fontWeight: 800, 
+                    fontSize: '18px', 
+                    marginTop: '32px',
+                    cursor: isPastDeadline ? 'default' : 'pointer'
+                }}
+            >
+                {isPastDeadline ? "접수 마감" : "신청 완료"}
+            </button>
         </div>
     );
 }

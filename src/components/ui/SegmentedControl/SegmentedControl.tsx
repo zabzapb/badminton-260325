@@ -10,6 +10,7 @@
  */
 "use client";
 import { useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 import "./SegmentedControl.css";
 
 export interface SegmentedControlTab {
@@ -19,6 +20,8 @@ export interface SegmentedControlTab {
     label: string;
     /** 탭 아이콘 (optional) */
     icon?: string;
+    /** 활성화 여부 (optional) */
+    disabled?: boolean;
 }
 
 export interface SegmentedControlProps {
@@ -34,6 +37,8 @@ export interface SegmentedControlProps {
     accent?: boolean;
     /** 오렌 활성 탭 스타일 */
     orange?: boolean;
+    /** filled 색상 배경 스타일 */
+    filled?: boolean;
     /** aria-label */
     ariaLabel?: string;
 }
@@ -45,6 +50,7 @@ export function SegmentedControl({
     fullWidth = false,
     accent = false,
     orange = false,
+    filled = false,
     ariaLabel = "탭 내비게이션",
 }: SegmentedControlProps) {
     const [internalActive, setInternalActive] = useState(
@@ -65,6 +71,7 @@ export function SegmentedControl({
                 fullWidth ? "segmented-control--full" : "",
                 accent ? "segmented-control--accent" : "",
                 orange ? "segmented-control--orange" : "",
+                filled ? "segmented-control--filled" : "",
             ]
                 .filter(Boolean)
                 .join(" ")}
@@ -85,11 +92,19 @@ export function SegmentedControl({
                             isActive
                                 ? "segmented-control__tab--active"
                                 : "segmented-control__tab--inactive",
+                            tab.disabled ? "segmented-control__tab--disabled" : "",
                         ].join(" ")}
-                        onClick={() => handleClick(tab.id)}
+                        onClick={() => !tab.disabled && handleClick(tab.id)}
+                        disabled={tab.disabled}
                     >
-                        {tab.icon && <span aria-hidden="true">{tab.icon}</span>}
-                        {tab.label}
+                        {tab.icon && (
+                            <Icon 
+                                name={tab.icon as any} 
+                                size={20} 
+                                color={isActive ? "currentColor" : (tab.disabled ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.7)")} 
+                            />
+                        )}
+                        <span>{tab.label}</span>
                     </button>
                 );
             })}

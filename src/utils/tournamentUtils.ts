@@ -65,7 +65,7 @@ export const EVENT_LIST = [
     { code: "WS", name: "WS", icon: "person" as const },
 ];
 
-export const LEVEL_LIST = ["자강", "준자강", "S", "A", "B", "C", "D", "E", "F"];
+export const LEVEL_LIST = ["Elite", "자강", "준자강", "S", "A", "B", "C", "D", "E", "F"];
 
 export const AGE_OPTIONS = [20, 30, 40, 45, 50, 55, 60, 65];
 

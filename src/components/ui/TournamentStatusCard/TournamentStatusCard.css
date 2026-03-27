@@ -176,8 +176,14 @@
 }
 
 /* 상태별 모디파이어 (필요 시 특수 스타일) */
-.tournament-status-card--closed {
-    opacity: 0.7;
+.tournament-status-card--closed,
+.tournament-status-card--finished {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+}
+
+.label-finished {
+    color: rgba(0, 0, 0, 0.4);
 }
 
 .tournament-status-card--manage {

@@ -10,7 +10,7 @@ interface Props {
 export const EventSelection: React.FC<Props> = ({ selectedEvents, toggleEvent }) => {
     return (
         <div className="setup-step">
-            <h4 className="input-label">1. 종목 선택 (중복 선택 가능)</h4>
+            <h4 className="input-label">1. 종목 선택 (묶음 선택 가능)</h4>
             <div className="event-pool">
                 {EVENT_LIST.map(ev => {
                     const isActive = selectedEvents.includes(ev.code);

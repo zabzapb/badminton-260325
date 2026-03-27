@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import "./TournamentStatusCard.css";
 
-export type TournamentStatus = "registered" | "open" | "closed";
+export type TournamentStatus = "registered" | "open" | "closed" | "finished";
 
 export interface TournamentEntryInfo {
     eventType: string;
@@ -46,6 +46,7 @@ const STATUS_MODIFIER: Record<TournamentStatus, string> = {
     registered: "tournament-status-card--registered",
     open: "tournament-status-card--open",
     closed: "tournament-status-card--closed",
+    finished: "tournament-status-card--finished",
 };
 
 export function getTournamentTimeInfo(eventDateStr: string, deadlineStr?: string) {
@@ -179,6 +180,7 @@ export function TournamentStatusCard({
                                 </div>
                             )}
                             {status === "closed" && <span className="label-closed">접수 마감</span>}
+                            {status === "finished" && <span className="label-finished">대회 종료</span>}
                             {status === "registered" && playerImages.length === 0 && <span className="label-registered">신청 완료</span>}
                         </div>
                     )}

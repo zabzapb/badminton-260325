@@ -92,3 +92,64 @@
     color: #FFFFFF;
     box-shadow: 0 4px 12px rgba(255, 107, 61, 0.3);
 }
+
+/* ── Filled Variant (Dashboard Widget Style) ── */
+.segmented-control--filled {
+    background: var(--color-accent-orange);
+    border: none;
+    padding: 6px;
+    gap: 0; /* Vertical separators will handle spacing */
+    box-shadow: 0 8px 24px rgba(255, 107, 61, 0.2);
+    border-radius: 8px;
+}
+
+.segmented-control--filled .segmented-control__tab {
+    flex-direction: column;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 700;
+    gap: 6px;
+    position: relative;
+    padding: 14px 12px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.segmented-control--filled .segmented-control__tab:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.segmented-control--filled .segmented-control__tab--active {
+    background: transparent !important;
+    color: #FFFFFF !important;
+    box-shadow: none;
+}
+
+.segmented-control--filled .segmented-control__tab--active span {
+    font-weight: 900;
+    opacity: 1;
+}
+
+.segmented-control--filled .segmented-control__tab--inactive span,
+.segmented-control--filled .segmented-control__tab--inactive svg {
+    opacity: 0.6;
+}
+
+/* Disabled Tab */
+.segmented-control__tab--disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+    filter: grayscale(1);
+    background: transparent !important;
+}
+
+.segmented-control__tab--disabled:hover,
+.segmented-control__tab--disabled:active {
+    background: transparent !important;
+    opacity: 0.3 !important;
+}

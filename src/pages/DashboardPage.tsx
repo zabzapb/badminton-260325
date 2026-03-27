@@ -158,37 +158,54 @@ export default function DashboardPage() {
                                 }
                                 return (
                                     <div key={t.id} className="tournament-card-wrapper">
-                                        <TournamentPlayerCard
-                                            id={t.id} name={t.name} eventDate={displayDate} deadline={t.deadline} venue={t.venue} status={t.status}
-                                            isJoined={t.isJoined} bgColor={getTournamentColor(t.id)} totalApplicants={t.totalApplicants || 0}
-                                            totalTeams={t.totalTeams || 0} teamStats={t.teamStats || { md: 0, wd: 0, xd: 0, s: 0 }}
-                                            isPartner={t.isPartner} joinedEvents={t.joinedEvents} partnerImages={t.appPartnerImages}
-                                            onClick={() => {
-                                                const cleanPhone = profile?.phone?.replace(/[^0-9]/g, "");
-                                                if (t.isJoined) {
-                                                    const myApp = (t.rawApps || []).find((a: any) => 
-                                                        a.userId === cleanPhone || a.partnerId === cleanPhone
-                                                    );
-                                                    const targetUrl = myApp ? `/tournament/${t.id}/edit?appId=${myApp.id}` : `/tournament/${t.id}/apply`;
-                                                    navigate(targetUrl);
-                                                } else {
-                                                    navigate(`/tournament/${t.id}/apply`);
-                                                }
-                                            }}
-                                            onApply={() => {
-                                                const cleanPhone = profile?.phone?.replace(/[^0-9]/g, "");
-                                                if (t.isJoined) {
-                                                    const myApp = (t.rawApps || []).find((a: any) => 
-                                                        a.userId === cleanPhone || a.partnerId === cleanPhone
-                                                    );
-                                                    const targetUrl = myApp ? `/tournament/${t.id}/edit?appId=${myApp.id}` : `/tournament/${t.id}/apply`;
-                                                    navigate(targetUrl);
-                                                } else {
-                                                    navigate(`/tournament/${t.id}/apply`);
-                                                }
-                                            }}
-                                            onLeave={() => handleLeaveTeam(t)}
-                                        />
+                                        {(() => {
+                                            const now = new Date();
+                                            const lastDateStr = t.eventDates?.length > 0 ? t.eventDates[t.eventDates.length - 1] : t.eventDate;
+                                            const tEndDate = lastDateStr ? new Date(lastDateStr + "T23:59:59") : null;
+                                            const tDeadline = t.deadline ? new Date(t.deadline + "T23:59:59") : null;
+
+                                            let calcStatus = (t.status === "registered") ? "registered" : "open";
+                                            if (tEndDate && now > tEndDate) {
+                                                calcStatus = "finished";
+                                            } else if (tDeadline && now > tDeadline) {
+                                                calcStatus = "closed";
+                                            }
+                                            
+                                            return (
+                                                <TournamentPlayerCard
+                                                    id={t.id} name={t.name} eventDate={displayDate} deadline={t.deadline} venue={t.venue} status={calcStatus as any}
+                                                    isJoined={t.isJoined} bgColor={getTournamentColor(t.id)} totalApplicants={t.totalApplicants || 0}
+                                                    totalTeams={t.totalTeams || 0} teamStats={t.teamStats || { md: 0, wd: 0, xd: 0, s: 0 }}
+                                                    isPartner={t.isPartner} joinedEvents={t.joinedEvents} partnerImages={t.appPartnerImages}
+                                                    onLeave={() => handleLeaveTeam(t)}
+                                                    onClick={() => {
+                                                        const cleanPhone = profile?.phone?.replace(/[^0-9]/g, "");
+                                                        if (t.isJoined) {
+                                                            const myApp = (t.rawApps || []).find((a: any) => 
+                                                                a.userId === cleanPhone || a.partnerId === cleanPhone
+                                                            );
+                                                            const targetUrl = myApp ? `/tournament/${t.id}/edit?appId=${myApp.id}` : `/tournament/${t.id}/apply`;
+                                                            navigate(targetUrl);
+                                                        } else {
+                                                            // 마감된 경우 클릭 불가하게 하거나 안내? 여기서는 일단 이동은 허용하되 신청 버튼이 안나오는 구조
+                                                            navigate(`/tournament/${t.id}/apply`);
+                                                        }
+                                                    }}
+                                                    onApply={() => {
+                                                        const cleanPhone = profile?.phone?.replace(/[^0-9]/g, "");
+                                                        if (t.isJoined) {
+                                                            const myApp = (t.rawApps || []).find((a: any) => 
+                                                                a.userId === cleanPhone || a.partnerId === cleanPhone
+                                                            );
+                                                            const targetUrl = myApp ? `/tournament/${t.id}/edit?appId=${myApp.id}` : `/tournament/${t.id}/apply`;
+                                                            navigate(targetUrl);
+                                                        } else {
+                                                            navigate(`/tournament/${t.id}/apply`);
+                                                        }
+                                                    }}
+                                                />
+                                            );
+                                        })()}
                                     </div>
                                 );
                             })}

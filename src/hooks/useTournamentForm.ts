@@ -126,6 +126,7 @@ export const useTournamentForm = () => {
             alert("종목, 급수, 그리고 연령대를 모두 설정해주세요.");
             return;
         }
+
         let processedGroups: AgeGroup[] = [];
         if (ageMode !== 'normal') {
             processedGroups = [...formData.ageGroups];
@@ -138,19 +139,83 @@ export const useTournamentForm = () => {
                 return { ...group, endAge: finalEndAge, birthRange: getBirthRange(group.startAge, finalEndAge, formData.baseYear) };
             });
         }
-        const newSegments: MatrixSegment[] = [];
-        formData.selectedEvents.forEach(evCode => {
-            formData.selectedLevels.forEach(lvCode => {
-                let finalGroups = processedGroups;
-                if (lvCode === "자강" || lvCode === "준자강") {
-                    finalGroups = [{ id: `ag-fixed-20-${crypto.randomUUID()}`, alias: "20", startAge: 20, endAge: 999, birthRange: getBirthRange(20, 999, formData.baseYear), sAge: 20, eAge: 20 }];
-                }
-                const segmentMapping: Record<string, string[]> = {};
-                finalGroups.forEach(g => { segmentMapping[g.id] = [evCode]; });
-                newSegments.push({ id: `seg-${evCode}-${lvCode}-${crypto.randomUUID()}`, mode: ageMode as any, events: [evCode], levels: [lvCode], ageGroups: finalGroups, categoryMatrix: segmentMapping });
+
+        setFormData(prev => {
+            let nextSegments = [...prev.confirmedSegments];
+
+            prev.selectedEvents.forEach(evCode => {
+                prev.selectedLevels.forEach(lvCode => {
+                    let finalGroups = [...processedGroups];
+                    if (lvCode === "자강" || lvCode === "준자강") {
+                        finalGroups = [{ id: `ag-fixed-20-${crypto.randomUUID()}`, alias: "20", startAge: 20, endAge: 999, birthRange: getBirthRange(20, 999, prev.baseYear), sAge: 20, eAge: 20 }];
+                    }
+
+                    // [개선] 이미 동일 종목/급수가 설정되어 있는지 확인
+                    const existingIdx = nextSegments.findIndex(s => s.events.includes(evCode) && s.levels.includes(lvCode));
+
+                    if (existingIdx !== -1) {
+                        // 기존 세그먼트에 연령대 추가 병합
+                        const existing = nextSegments[existingIdx];
+                        let mergedGroups = [...existing.ageGroups];
+                        const mergedMatrix = { ...existing.categoryMatrix };
+
+                        finalGroups.forEach(g => {
+                            // 중복 체크 (alias 기준)
+                            if (!mergedGroups.some(eg => eg.alias === g.alias)) {
+                                mergedGroups.push(g);
+                                mergedMatrix[g.id] = [evCode];
+                            }
+                        });
+
+                        // [중요] 연령대가 추가되었으므로 전체 순서와 범위를 다시 계산
+                        if (existing.mode === 'normal') {
+                            // 1. 소팅
+                            mergedGroups.sort((a, b) => a.sAge - b.sAge);
+                            // 2. 범위 재계산
+                            mergedGroups = mergedGroups.map((group, idx) => {
+                                const nextG = mergedGroups[idx + 1];
+                                const dynamicEndAgeParam = nextG ? nextG.sAge - 1 : 999;
+                                const finalEndAge = getCalculatedEndAge(group.sAge, dynamicEndAgeParam, 'normal');
+                                return { 
+                                    ...group, 
+                                    startAge: group.sAge, 
+                                    endAge: finalEndAge, 
+                                    birthRange: getBirthRange(group.sAge, finalEndAge, prev.baseYear) 
+                                };
+                            });
+                        }
+
+                        nextSegments[existingIdx] = { 
+                            ...existing, 
+                            ageGroups: mergedGroups, 
+                            categoryMatrix: mergedMatrix 
+                        };
+                    } else {
+                        // 신규 세그먼트 생성
+                        const segmentMapping: Record<string, string[]> = {};
+                        finalGroups.forEach(g => { segmentMapping[g.id] = [evCode]; });
+                        nextSegments.push({
+                            id: `seg-${evCode}-${lvCode}-${crypto.randomUUID()}`,
+                            mode: ageMode as any,
+                            events: [evCode],
+                            levels: [lvCode],
+                            ageGroups: finalGroups,
+                            categoryMatrix: segmentMapping
+                        });
+                    }
+                });
             });
+
+            return { 
+                ...prev, 
+                confirmedSegments: nextSegments, 
+                selectedEvents: [], 
+                selectedLevels: [], 
+                ageGroups: [], 
+                categoryMatrix: {} 
+            };
         });
-        setFormData(prev => ({ ...prev, confirmedSegments: [...prev.confirmedSegments, ...newSegments], selectedEvents: [], selectedLevels: [], ageGroups: [], categoryMatrix: {} }));
+
         setIsMatrixConfirmed(false);
     };
 

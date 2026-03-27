@@ -92,7 +92,7 @@ export default function RegisterPage() {
                     <div className="form-group">
                         <label className="form-label">구 급수 기준</label>
                         <div className="register-options-grid">
-                            {["S", "A", "B", "C", "D", "E", "F"].map(lv => (
+                            {["Elite", "S", "A", "B", "C", "D", "E", "F"].map(lv => (
                                 <button key={lv} type="button" className={`option-chip ${formData.level === lv ? "option-chip--selected" : ""}`} onClick={() => setFormData(p => ({ ...p, level: lv }))}>{lv}</button>
                             ))}
                         </div>

@@ -15,36 +15,67 @@ export const TournamentOverviewSection: React.FC<props> = ({
 }) => {
     return (
         <div className="tournament-overview-section" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            {/* Region Type Selection */}
+            {/* Tournament Type Selection (Card Style) */}
             <div className="input-group">
                 <label className="input-label">대회 구분</label>
-                <div style={{ display: 'flex', background: '#F2F2F7', borderRadius: '32px', padding: '6px', gap: '4px' }}>
-                    <button 
-                        type="button" 
-                        onClick={() => setFormData({ ...formData, regionType: 'local' })} 
-                        style={{ 
-                            flex: 1, height: '44px', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer', 
-                            background: formData.regionType === 'local' ? 'var(--color-accent-orange)' : 'transparent', 
-                            color: formData.regionType === 'local' ? '#fff' : '#8E8E93',
-                            transition: 'all 0.2s',
-                            boxShadow: formData.regionType === 'local' ? '0 4px 12px rgba(255,107,61,0.2)' : 'none'
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {/* Local Option */}
+                    <div 
+                        onClick={() => setFormData({ ...formData, regionType: 'local' })}
+                        style={{
+                            padding: '20px',
+                            borderRadius: '16px',
+                            border: formData.regionType === 'local' ? '2px solid #000' : '1px solid #E5E5EA',
+                            background: formData.regionType === 'local' ? '#F9F9F9' : '#fff',
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
                         }}
                     >
-                        시·구·군
-                    </button>
-                    <button 
-                        type="button" 
-                        onClick={() => setFormData({ ...formData, regionType: 'national' })} 
-                        style={{ 
-                            flex: 1, height: '44px', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer', 
-                            background: formData.regionType === 'national' ? 'var(--color-accent-orange)' : 'transparent', 
-                            color: formData.regionType === 'national' ? '#fff' : '#8E8E93',
-                            transition: 'all 0.2s',
-                            boxShadow: formData.regionType === 'national' ? '0 4px 12px rgba(255,107,61,0.2)' : 'none'
+                        <div style={{ flex: 1, paddingRight: '20px' }}>
+                            <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1E', marginBottom: '6px' }}>시구군 지역 대회</h4>
+                            <p style={{ fontSize: '13px', color: '#8E8E93', lineHeight: '1.6', margin: 0 }}>
+                                각 지자체 배드민턴협회에서 주최하는 대회로 해당 지역 급수를 기준으로 참가 기준이 정해집니다.<br />
+                                <span style={{ color: '#FF6B3D', fontWeight: 600 }}>플레이어의 급수보다 낮은 급수로 신청이 불가합니다.</span>
+                            </p>
+                        </div>
+                        <div style={{ 
+                            width: '24px', height: '24px', borderRadius: '50%', 
+                            border: formData.regionType === 'local' ? '7px solid #000' : '2px solid #E5E5EA',
+                            flexShrink: 0, marginTop: '2px', transition: 'all 0.2s'
+                        }} />
+                    </div>
+
+                    {/* National Option */}
+                    <div 
+                        onClick={() => setFormData({ ...formData, regionType: 'national' })}
+                        style={{
+                            padding: '20px',
+                            borderRadius: '16px',
+                            border: formData.regionType === 'national' ? '2px solid #000' : '1px solid #E5E5EA',
+                            background: formData.regionType === 'national' ? '#F9F9F9' : '#fff',
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
                         }}
                     >
-                        전국 대회
-                    </button>
+                        <div style={{ flex: 1, paddingRight: '20px' }}>
+                            <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1E', marginBottom: '6px' }}>전국 사설 대회</h4>
+                            <p style={{ fontSize: '13px', color: '#8E8E93', lineHeight: '1.6', margin: 0 }}>
+                                지역 급수와 상관없이 종목 지원이 가능한 대회입니다.<br />
+                                급수 기준은 적용되지 않으며, 플레이어 카드에서도 급수를 보여지지 않습니다.
+                            </p>
+                        </div>
+                        <div style={{ 
+                            width: '24px', height: '24px', borderRadius: '50%', 
+                            border: formData.regionType === 'national' ? '7px solid #000' : '2px solid #E5E5EA',
+                            flexShrink: 0, marginTop: '2px', transition: 'all 0.2s'
+                        }} />
+                    </div>
                 </div>
             </div>
 
@@ -148,6 +179,60 @@ export const TournamentOverviewSection: React.FC<props> = ({
                                 account: { ...formData.account, owner: e.target.value } 
                             })} 
                             style={{ border: 'none', padding: 0 }}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Poster and Syllabus/Guideline Upload */}
+            <div className="input-group" style={{ marginTop: '0' }}>
+                <label className="input-label">대회 포스터 및 요강</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {/* Poster Upload */}
+                    <div 
+                        className="inline-item" 
+                        style={{ height: '48px', cursor: 'pointer', position: 'relative' }}
+                    >
+                        <Icon name="gallery" size={18} color="#FF6B3D" />
+                        <span style={{ fontSize: '14px', color: (formData.poster) ? '#1C1C1E' : '#C7C7CC', fontWeight: formData.poster ? 700 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {formData.poster instanceof File 
+                                ? formData.poster.name 
+                                : (typeof formData.poster === 'string' && formData.poster.startsWith('http'))
+                                    ? "대회 포스터 이미지가 등록됨" 
+                                    : "대회 포스터 이미지 선택(JPG, PNG)"}
+                        </span>
+                        <input 
+                            type="file" 
+                            accept="image/*"
+                            style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) setFormData({ ...formData, poster: file });
+                            }}
+                        />
+                    </div>
+
+                    {/* Guideline / Syllabus Upload */}
+                    <div 
+                        className="inline-item" 
+                        style={{ height: '48px', cursor: 'pointer', position: 'relative' }}
+                    >
+                        <Icon name="document" size={18} color="#34C759" />
+                        <span style={{ fontSize: '14px', color: (formData.guideline) ? '#1C1C1E' : '#C7C7CC', fontWeight: formData.guideline ? 700 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {formData.guideline instanceof File 
+                                ? formData.guideline.name 
+                                : (typeof formData.guideline === 'string' && formData.guideline.startsWith('http'))
+                                    ? "대회 요강 파일이 등록됨" 
+                                    : "대회 요강 파일 선택(PDF, DOCX 등)"}
+                        </span>
+                        <input 
+                            type="file" 
+                            accept=".pdf,.doc,.docx,.hwp,.txt"
+                            style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) setFormData({ ...formData, guideline: file });
+                            }}
                         />
                     </div>
                 </div>

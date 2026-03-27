@@ -54,6 +54,12 @@ export const isGradeAllowed = (
     applyGrade: string, 
     selfGrade: string
 ) => {
+    // [특별 규정] 본인이 엘리트(선출)인 경우
+    if (selfGrade === "Elite") {
+        // 자강, 준자강에만 참여 가능 (동호인 하급 부문 참여 불가)
+        return applyGrade === "자강" || applyGrade === "준자강" || applyGrade === "Elite";
+    }
+
     // [규칙 개선] S와 A는 동일 등급으로 간주하여 상호 지원(S↔A) 허용
     const isSOrA = (g: string) => g === "S" || g === "A";
     if (isSOrA(selfGrade) && isSOrA(applyGrade)) return true;

@@ -46,7 +46,7 @@ export function MatrixSummary({ formData, onResetAllSegments, onToggleAgeGroup }
                                 <tbody>
                                     {levelsForThisCard.map(lv => (
                                         <tr key={lv}>
-                                            <td style={{ color: '#fff', fontWeight: 700 }}>{lv === "준자강" ? "준자" : lv}</td>
+                                            <td style={{ color: '#fff', fontWeight: 700 }}>{lv}</td>
                                             {tableHeaders.map(h => {
                                                 const coveringAg = segments.filter(seg => (seg.levels || []).includes(lv)).flatMap(seg => (seg.ageGroups || []).map(ag => ({ ...ag, segmentId: seg.id }))).find(ag => isNormalMode ? (ag.startAge <= (h.val as number) && (ag.endAge === 999 || ag.endAge >= (h.val as number))) : ag.id === h.id);
                                                 const isElite = lv === "자강" || lv === "준자강";

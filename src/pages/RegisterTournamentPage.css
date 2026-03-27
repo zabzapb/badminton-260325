@@ -747,7 +747,7 @@
 .btn-nav-back,
 .btn-nav-next {
     padding: 12px 24px;
-    border-radius: 12px;
+    border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
 }
