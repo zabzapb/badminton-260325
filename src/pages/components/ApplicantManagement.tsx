@@ -65,27 +65,54 @@ export function ApplicantManagement({ apps, fetchingApps, onDownloadExcel, onRef
                         const cleanAge = ageGroup.replace('대', '');
                         
                         // Status Logic
-                        const isConfirmed = app.status === 'confirmed' || app.status === 'pending'; // 파트너 승인 시점
                         const isAwaiting = app.status === 'waiting_partner';
-                        const statusLabel = isAwaiting ? '승인 대기' : (isConfirmed ? '신청 확정' : '입금 대기');
+                        const statusLabel = isAwaiting ? '승인 대기' : '신청 확정';
                         const statusColor = isAwaiting ? '#007AFF' : '#34C759';
 
                         // Payment Logic
                         const payStatus = app.paymentStatus || 'pending';
                         const payLabel = payStatus === 'confirmed' ? '입금 확인' : '입금 대기';
                         const payColor = payStatus === 'confirmed' ? '#34C759' : '#FF6B3D';
+                        
+                        // Age Calculation (Fixed for partner)
+                        const tBase = app.tournamentBaseYear || 2026;
+                        const partnerAge = app.partnerAppliedAge || (app.partnerInfo?.birthYear ? (tBase - app.partnerInfo.birthYear) : null);
+
+                        // Phone Formatter (Full number with hyphens)
+                        const formatPhone = (phone: string) => {
+                            const raw = (phone || "").replace(/[^0-9]/g, "");
+                            if (raw.length === 11) {
+                                return `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7)}`;
+                            }
+                            return phone;
+                        };
+
+                        // T-shirt size mapper
+                        const formatSize = (size: string) => {
+                            const map: Record<string, string> = { 
+                                "85": "XS", "90": "S", "95": "M", "100": "L", 
+                                "105": "XL", "110": "2XL", "115": "3XL" 
+                            };
+                            return map[size] || size;
+                        };
 
                         return (
                             <div key={app.id} style={{ background: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #E5E5EA', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
                                 {/* 접수 상태 헤더 */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        <div style={{ fontSize: '18px', fontWeight: 900, color: '#1C1C1E' }}>
-                                            {categoryCode} {cleanAge} {grade}
-                                        </div>
-                                        <div style={{ fontSize: '11px', fontWeight: 600, color: statusColor }}>{statusLabel}</div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+                                    <div style={{ fontSize: '18px', fontWeight: 900, color: '#1C1C1E' }}>
+                                        {categoryCode} {cleanAge} {grade}
                                     </div>
-                                    <div style={{ textAlign: 'right' }}>
+                                    <div style={{ display: 'flex', gap: '6px' }}>
+                                        {/* 상태 배지 1: 승인/신청 상태 */}
+                                        <div style={{ 
+                                            fontSize: '11px', fontWeight: 800, color: statusColor, 
+                                            background: isAwaiting ? 'rgba(0,122,255,0.1)' : 'rgba(52,199,89,0.1)', 
+                                            padding: '4px 8px', borderRadius: '6px' 
+                                        }}>
+                                            {statusLabel}
+                                        </div>
+                                        {/* 상태 배지 2: 입금 상태 */}
                                         <div style={{ 
                                             fontSize: '11px', fontWeight: 800, color: payColor, 
                                             background: payStatus === 'confirmed' ? 'rgba(52,199,89,0.1)' : 'rgba(255,107,61,0.1)', 
@@ -99,22 +126,26 @@ export function ApplicantManagement({ apps, fetchingApps, onDownloadExcel, onRef
                                 {/* 플레이어 정보: [이름] [나이] [급수] [티셔츠] [전화번호] */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                     {/* 신청자 */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 0.8fr 1fr 2fr', alignItems: 'center', fontSize: '13px', borderBottom: app.partnerId ? '1px solid #F2F2F7' : 'none', paddingBottom: app.partnerId ? '10px' : '0' }}>
-                                        <span style={{ fontWeight: 800 }}>{app.applicantInfo?.realName || app.userName}</span>
-                                        <span style={{ textAlign: 'center' }}>{app.appliedAge || '-'}세</span>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.6fr 0.7fr 1fr 2fr', alignItems: 'center', fontSize: '13px', borderBottom: app.partnerId ? '1px solid #F2F2F7' : 'none', paddingBottom: app.partnerId ? '12px' : '0' }}>
+                                        <span style={{ fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{app.applicantInfo?.realName || app.userName}</span>
+                                        <span style={{ textAlign: 'center' }}>{app.appliedAge || '-'}</span>
                                         <span style={{ textAlign: 'center' }}>{app.appliedGrade || grade}</span>
-                                        <span style={{ textAlign: 'center' }}>{app.applicantInfo?.tshirtSize || '-'}</span>
-                                        <span style={{ textAlign: 'right', fontSize: '11px', color: '#8E8E93' }}>{app.applicantInfo?.phone || app.userId}</span>
+                                        <span style={{ textAlign: 'center' }}>{formatSize(app.applicantInfo?.tshirtSize || '-')}</span>
+                                        <a href={`tel:${app.applicantInfo?.phone || app.userId}`} style={{ textAlign: 'right', fontSize: '13px', color: '#1C1C1E', textDecoration: 'none', fontWeight: 500 }}>
+                                            {formatPhone(app.applicantInfo?.phone || app.userId)}
+                                        </a>
                                     </div>
 
                                     {/* 파트너 */}
                                     {app.partnerId && (
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 0.8fr 1fr 2fr', alignItems: 'center', fontSize: '13px' }}>
-                                            <span style={{ fontWeight: 800 }}>{app.partnerInfo?.realName || '파트너'}</span>
-                                            <span style={{ textAlign: 'center' }}>{app.partnerAppliedAge || '-'}세</span>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.6fr 0.7fr 1fr 2fr', alignItems: 'center', fontSize: '13px', paddingTop: '12px' }}>
+                                            <span style={{ fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{app.partnerInfo?.realName || '파트너'}</span>
+                                            <span style={{ textAlign: 'center' }}>{partnerAge || '-'}</span>
                                             <span style={{ textAlign: 'center' }}>{app.partnerAppliedGrade || app.partnerInfo?.level || grade}</span>
-                                            <span style={{ textAlign: 'center' }}>{app.partnerInfo?.tshirtSize || '-'}</span>
-                                            <span style={{ textAlign: 'right', fontSize: '11px', color: '#8E8E93' }}>{app.partnerInfo?.phone || app.partnerId}</span>
+                                            <span style={{ textAlign: 'center' }}>{formatSize(app.partnerInfo?.tshirtSize || '-')}</span>
+                                            <a href={`tel:${app.partnerInfo?.phone || app.partnerId}`} style={{ textAlign: 'right', fontSize: '13px', color: '#1C1C1E', textDecoration: 'none', fontWeight: 500 }}>
+                                                {formatPhone(app.partnerInfo?.phone || app.partnerId)}
+                                            </a>
                                         </div>
                                     )}
                                 </div>
@@ -124,7 +155,7 @@ export function ApplicantManagement({ apps, fetchingApps, onDownloadExcel, onRef
                                         onClick={() => handleDeleteApp(app.id)}
                                         style={{ background: '#FFF2F2', border: '1px solid #FFD6D6', color: '#FF3B30', padding: '10px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}
                                     >
-                                        접수 삭제
+                                        접수 강제 취소
                                     </button>
                                     <button 
                                         onClick={() => handleTogglePayment(app.id, payStatus)}
