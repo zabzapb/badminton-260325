@@ -145,12 +145,16 @@ export const formatNumber = (val: string) => {
 };
 
 /**
- * [통합 통계 로직] 대회 신청 내역에서 참가팀/인원/종목별 개수를 산출합니다.
+ * [통합 통계 로직] 대회 신청 내역에서 참가팀/인원/종목별 개수 및 회계 데이터를 산출합니다.
  * @param apps 신청 내역 배열
+ * @param tournament 대회 설정 정보 (참가비 계산용)
  */
-export const calculateTournamentStats = (apps: any[]) => {
+export const calculateTournamentStats = (apps: any[], tournament?: any) => {
     // 1. 취소/거절된 내역 제외
     const activeApps = (apps || []).filter(a => a.status !== "cancelled" && a.status !== "rejected");
+
+    const feeD = Number((tournament?.feeDoubles || "0").replace(/[^0-9]/g, "")) || 0;
+    const feeS = Number((tournament?.feeSingles || "0").replace(/[^0-9]/g, "")) || 0;
 
     const stats = {
         totalTeams: activeApps.length,
@@ -161,7 +165,13 @@ export const calculateTournamentStats = (apps: any[]) => {
         sCount: 0,
         malePlayers: 0,
         femalePlayers: 0,
-        uniqueParticipants: new Set<string>()
+        uniqueParticipants: new Set<string>(),
+        // 회계 통계
+        totalExpectedFee: 0,
+        paidDoublesFee: 0,
+        paidSinglesFee: 0,
+        paidTeams: 0,
+        unpaidTeams: 0
     };
 
     activeApps.forEach(app => {
@@ -169,18 +179,29 @@ export const calculateTournamentStats = (apps: any[]) => {
         if (app.userId) stats.uniqueParticipants.add(app.userId);
         if (app.partnerId) stats.uniqueParticipants.add(app.partnerId);
 
-        // 종목별 팀수 계산
+        // 종목별 팀수 및 입금 상태 계산
         const cat = app.category || "";
-        if (["MD", "남복"].includes(cat)) stats.mdCount++;
+        const isSingles = ["S", "MS", "WS", "단식", "MWS"].includes(cat);
+        const teamFee = isSingles ? feeS : feeD;
+        const isPaid = app.paymentStatus === 'confirmed';
+
+        if (isSingles) stats.sCount++;
+        else if (["MD", "남복"].includes(cat)) stats.mdCount++;
         else if (["WD", "여복"].includes(cat)) stats.wdCount++;
         else if (["XD", "혼복"].includes(cat)) stats.xdCount++;
-        else if (["S", "MS", "WS", "단식", "MWS"].includes(cat)) stats.sCount++;
 
         // 인원수 합산
-        if (["MD", "WD", "XD", "남복", "여복", "혼복"].includes(cat)) {
-            stats.totalPlayers += 2;
+        if (!isSingles) stats.totalPlayers += 2;
+        else stats.totalPlayers += 1;
+
+        // 회계 계산
+        stats.totalExpectedFee += teamFee;
+        if (isPaid) {
+            if (isSingles) stats.paidSinglesFee += teamFee;
+            else stats.paidDoublesFee += teamFee;
+            stats.paidTeams++;
         } else {
-            stats.totalPlayers += 1;
+            stats.unpaidTeams++;
         }
     });
 
@@ -192,6 +213,14 @@ export const calculateTournamentStats = (apps: any[]) => {
         wdCount: stats.wdCount,
         xdCount: stats.xdCount,
         sCount: stats.sCount,
+        // 회계 데이터
+        totalExpectedFee: stats.totalExpectedFee,
+        paidDoublesFee: stats.paidDoublesFee,
+        paidSinglesFee: stats.paidSinglesFee,
+        paidTeams: stats.paidTeams,
+        unpaidTeams: stats.unpaidTeams,
+        // Legacy aliases
+        currentPaidFee: stats.paidDoublesFee + stats.paidSinglesFee,
         // Legacy aliases for UI compatibility
         total: stats.uniqueParticipants.size,
         md: stats.mdCount,

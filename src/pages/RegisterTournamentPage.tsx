@@ -185,6 +185,7 @@ export default function TournamentRegistrationPage() {
                     {activeTab === 'applicants' && (
                         <ApplicantManagement 
                             apps={apps} 
+                            tournament={formData}
                             fetchingApps={fetchingApps} 
                             onDownloadExcel={() => {
                                 alert("엑셀 다운로드 기능은 준비 중입니다.");
