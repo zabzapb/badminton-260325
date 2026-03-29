@@ -258,12 +258,17 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
                                 })()}
                             </div>
                             <button 
-                                onClick={() => navigate(`/tournament/${id}/apply`)} 
+                                onClick={() => !isPastDeadline && navigate(`/tournament/${id}/apply`)} 
+                                disabled={isPastDeadline}
                                 style={{ 
-                                    background: '#F2F2F7', border: 'none', borderRadius: '12px', 
+                                    background: isPastDeadline ? '#F2F2F7' : '#F2F2F7', 
+                                    border: 'none', borderRadius: '12px', 
                                     padding: '0 20px', fontSize: '14px', fontWeight: 800,
                                     height: '54px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    whiteSpace: 'nowrap'
+                                    whiteSpace: 'nowrap',
+                                    opacity: isPastDeadline ? 0.3 : 1,
+                                    color: isPastDeadline ? '#8E8E93' : '#000',
+                                    cursor: isPastDeadline ? 'default' : 'pointer'
                                 }}
                             >
                                 종목 추가 신청
@@ -341,13 +346,53 @@ function TournamentHistoryCard({ app, tournament, profile, tournamentCats, tourn
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <div>
                     <h3 style={{ fontSize: '18px', fontWeight: 800 }}>{getCategoryCode(category)} {ageGroup} {grade}</h3>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: app.status === 'confirmed' ? '#34C759' : '#FF9500' }}>
-                        {app.status === 'confirmed' ? '참가 확정' : (app.status === 'waiting_partner' ? '파트너 승인 대기' : '승인 대기')}
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: (app.status === 'confirmed') ? '#34C759' : (app.status === 'rejected' ? '#FF3B30' : '#FF9500') }}>
+                        {app.status === 'confirmed' ? '참가 확정' : (
+                            app.status === 'waiting_partner' 
+                                ? (isPastDeadline ? '기간 만료 자동 취소' : '파트너 승인 대기') 
+                                : (app.status === 'rejected' ? '신청 거절됨 (파트너)' : '승인 대기')
+                        )}
                     </span>
+                    {app.status === 'rejected' && (
+                        <div style={{ marginTop: '8px', padding: '12px', background: 'rgba(255,59,48,0.05)', borderRadius: '12px', fontSize: '12px', color: '#FF3B30', fontWeight: 700, lineHeight: '1.4' }}>
+                            파트너가 초대를 거절하였습니다. <br/>
+                            연필 아이콘을 눌러 파트너를 다시 지정하거나, 삭제 후 다시 신청해 주세요.
+                        </div>
+                    )}
+                    {app.status === 'waiting_partner' && isPastDeadline && (
+                        <div style={{ marginTop: '8px', padding: '12px', background: 'rgba(255,59,48,0.05)', borderRadius: '12px', fontSize: '12px', color: '#FF3B30', fontWeight: 700, lineHeight: '1.4' }}>
+                            접수 기한 내에 파트너 승인이 완료되지 않아,<br/>
+                            [{(tournament as any).name}] {category} {grade} 신청이 자동 취소되었습니다.
+                        </div>
+                    )}
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    {isOwner && <button onClick={() => setEditMode(!editMode)} style={{ width: '32px', height: '32px', borderRadius: '16px', background: '#f8f8f8', border: 'none' }}><Icon name="edit" size={16} /></button>}
-                    <button onClick={() => onCancel(app.id, app)} style={{ width: '32px', height: '32px', borderRadius: '16px', background: '#f8f8f8', border: 'none' }}><Icon name="trash" size={16} color="#FF3B30" /></button>
+                    {isOwner && (
+                        <button 
+                            onClick={() => !isPastDeadline && setEditMode(!editMode)} 
+                            disabled={isPastDeadline}
+                            style={{ 
+                                width: '32px', height: '32px', borderRadius: '16px', 
+                                background: '#f8f8f8', border: 'none',
+                                opacity: isPastDeadline ? 0.3 : 1,
+                                cursor: isPastDeadline ? 'default' : 'pointer'
+                            }}
+                        >
+                            <Icon name="edit" size={16} color={isPastDeadline ? "#8E8E93" : "#000"} />
+                        </button>
+                    )}
+                    <button 
+                        onClick={() => !isPastDeadline && onCancel(app.id, app)} 
+                        disabled={isPastDeadline}
+                        style={{ 
+                            width: '32px', height: '32px', borderRadius: '16px', 
+                            background: '#f8f8f8', border: 'none',
+                            opacity: isPastDeadline ? 0.3 : 1,
+                            cursor: isPastDeadline ? 'default' : 'pointer'
+                        }}
+                    >
+                        <Icon name="trash" size={16} color={isPastDeadline ? "#8E8E93" : "#FF3B30"} />
+                    </button>
                 </div>
             </div>
 
@@ -391,7 +436,12 @@ function ApplicationDraftCard({ id, tournament, profile, tournamentCats, allUser
 
     useEffect(() => {
         if (!category && tournamentCats.length > 0) {
-            const hasApps = (cat: string) => allUserApps.some((a: any) => a.tournamentId === id && getCategoryCode(a.category) === getCategoryCode(cat) && a.status !== 'cancelled');
+            const hasApps = (cat: string) => allUserApps.some((a: any) => 
+                a.tournamentId === id && 
+                getCategoryCode(a.category) === getCategoryCode(cat) && 
+                a.status !== 'cancelled' && 
+                a.status !== 'rejected'
+            );
             const available = tournamentCats.filter((c: any) => !hasApps(c.type));
             if (available.length > 0) setCategory(available[0].type);
         }
@@ -421,7 +471,10 @@ function ApplicationDraftCard({ id, tournament, profile, tournamentCats, allUser
                 tournamentCats={tournamentCats} profile={profile} tournament={tournament} isAppOwner={true}
                 currentPartner={partner} onPartnerSelect={setPartner} isApplicant={true}
                 excludePhones={[
-                    ...(tournamentApps.filter((a: any) => getCategoryCode(a.category) === getCategoryCode(category || "")).flatMap((a: any) => [a.userId, a.partnerId].filter(Boolean))),
+                    ...(tournamentApps.filter((a: any) => 
+                        getCategoryCode(a.category) === getCategoryCode(category || "") &&
+                        a.status !== 'rejected' && a.status !== 'cancelled'
+                    ).flatMap((a: any) => [a.userId, a.partnerId].filter(Boolean))),
                     profile?.phone?.replace(/[^0-9]/g, "")
                 ].filter(Boolean)}
                 showSelectionOptions={true}

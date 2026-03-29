@@ -40,9 +40,12 @@ export const isAgeGroupValid = (
     if (!playerBirthYear) return false;
     const playerAge = baseYear - playerBirthYear;
     
-    // [수정] 연령 자격 규정: 본인의 나이가 신청하려는 그룹의 최소 연령 이상이어야 함
-    // (상위 연령대가 하위 연령대로 '내려가는' 것은 허용됨. 예: 40대가 20대로 신청 가능)
-    // 하지만 20대가 60대로 신청하는 것은 불가능함
+    // [연령 규정: 모든 대회 공통] 
+    // 본인의 나이가 신청하려는 그룹의 최소 연령(sAge)보다 '크거나 같아야' 함
+    // (상위 연령대-40대-가 하위 연령대-20대-로 도전하여 지원하는 것은 가능하지만, 
+    // 하위 연령대-20대-가 본인보다 나이가 많은 연령대-60대-로 지원하는 '하향 지원'은 금지)
+    // 예: 25세 유저가 40세(sAge 40) 종목 신청 시: 25 >= 40 -> false (불가)
+    // 예: 45세 유저가 20세(sAge 20) 종목 신청 시: 45 >= 20 -> true (가능)
     return playerAge >= targetAgeGroup.sAge;
 };
 
@@ -54,24 +57,31 @@ export const isGradeAllowed = (
     applyGrade: string, 
     selfGrade: string
 ) => {
-    // [특별 규정] 본인이 엘리트(선출)인 경우
+    // 1. [공통 선출 규정] 본인이 엘리트(선출)인 경우
     if (selfGrade === "Elite") {
-        // 자강, 준자강에만 참여 가능 (동호인 하급 부문 참여 불가)
+        // 모든 대회 공통: 자강, 준자강, Elite에만 참여 가능 (동호인 하급 부문-A/B/C/D 등- 참여 절대 불가)
         return applyGrade === "자강" || applyGrade === "준자강" || applyGrade === "Elite";
     }
 
-    // [규칙 개선] S와 A는 동일 등급으로 간주하여 상호 지원(S↔A) 허용
+    // 2. [전국대회 특별 규정]
+    if (tournamentRegion === "national") {
+        // 전국대회의 경우 동호인(Elite 제외)의 신청 급수 제한을 해제함 (자유로운 상/하향 지원 가능)
+        return true;
+    }
+
+    // 3. [지역대회 일반 규정]
+    // S와 A는 동일 등급으로 간주하여 상호 지원(S↔A) 허용
     const isSOrA = (g: string) => g === "S" || g === "A";
     if (isSOrA(selfGrade) && isSOrA(applyGrade)) return true;
 
-    // 기본적으로 본인 급수 이상만 신청 가능하도록 엄격히 적용
+    // 본인 급수 이상(상향 지원)만 신청 가능하도록 엄격히 적용
     const applyIdx = LEVEL_LIST.indexOf(applyGrade);
     const selfIdx = LEVEL_LIST.indexOf(selfGrade);
     
     if (applyIdx === -1 || selfIdx === -1) return true;
     
-    // selfIdx가 더 크거나 같다는 것은 본인이 신청 급수와 같거나 더 하위 급수(실력이 낮음)라는 뜻
-    // 즉, 상향 지원만 허용하는 로직
+    // selfIdx(내 급수 인덱스)가 applyIdx(신청 금수 인덱스)보다 '크거나 같다'는 것은 
+    // 내 실력이 신청 부문과 같거나 더 낮음(상향 지원)을 의미함 (HCTC 리스트 순서 기준)
     return selfIdx >= applyIdx; 
 };
 

@@ -27,10 +27,47 @@ export function ApplicantManagement({ apps, tournament, fetchingApps, onDownload
     // 단식이 존재하는지 여부 (설정이나 신청 내역 기준)
     const hasSingles = sCount > 0 || Number(tournament?.feeSingles || 0) > 0;
 
-    const handleTogglePayment = async (appId: string, currentStatus: string) => {
+    const handleTogglePayment = async (app: any) => {
+        const currentStatus = app.paymentStatus || 'pending';
         const nextStatus = currentStatus === 'confirmed' ? 'pending' : 'confirmed';
-        const res = await updatePaymentStatus(appId, nextStatus);
-        if (res.success) onRefresh?.();
+        
+        const res = await updatePaymentStatus(app.id, nextStatus);
+        if (res.success) {
+            // [추가] 입금 확인/해제 시 팀원 전체에게 알림 발송
+            const { createNotification } = await import("@/lib/firebase/notificationService");
+            const members = [app.userId, app.partnerId].filter(Boolean);
+            const msg = nextStatus === 'confirmed' 
+                ? `[${tournament?.name || '대회'}] ${app.category} ${app.group} 참가비 입금이 확인되었습니다.`
+                : `[${tournament?.name || '대회'}] ${app.category} ${app.group} 참가비 입금을 요청드립니다.`;
+            
+            await Promise.all(members.map(mid => createNotification({
+                userId: mid,
+                type: 'info',
+                tournamentId: tournament?.id || app.tournamentId,
+                message: msg,
+                isRead: false,
+                createdAt: new Date().toISOString()
+            })));
+
+            onRefresh?.();
+        }
+    };
+
+    const handleRequestPayment = async (app: any) => {
+        const { createNotification } = await import("@/lib/firebase/notificationService");
+        const members = [app.userId, app.partnerId].filter(Boolean);
+        const msg = `[${tournament?.name || '대회'}] ${app.category} ${app.group} 참가비 입금을 요청드립니다.`;
+        
+        const res = await Promise.all(members.map(mid => createNotification({
+            userId: mid,
+            type: 'info',
+            tournamentId: tournament?.id || app.tournamentId,
+            message: msg,
+            isRead: false,
+            createdAt: new Date().toISOString()
+        })));
+        
+        if (res.length > 0) alert("입금 요청 알림을 팀원 전체에게 발송하였습니다.");
     };
 
     const handleDeleteApp = async (appId: string) => {
@@ -131,8 +168,11 @@ export function ApplicantManagement({ apps, tournament, fetchingApps, onDownload
                 </div>
 
                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
-                    <button onClick={() => handleDeleteApp(app.id)} style={{ background: '#FFF2F2', border: '1px solid #FFD6D6', color: '#FF3B30', padding: '10px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}>접수 강제 취소</button>
-                    <button onClick={() => handleTogglePayment(app.id, payStatus)} style={{ background: payStatus === 'confirmed' ? '#f8f8f8' : '#000', border: 'none', color: payStatus === 'confirmed' ? '#8E8E93' : '#fff', padding: '10px 20px', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', flex: 1 }}>{payStatus === 'confirmed' ? '입금 확인 취소' : '입금 확인 완료'}</button>
+                    <button onClick={() => handleDeleteApp(app.id)} style={{ background: '#FFF2F2', border: '1px solid #FFD6D6', color: '#FF3B30', padding: '10px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}>강제 취소</button>
+                    {payStatus !== 'confirmed' && (
+                        <button onClick={() => handleRequestPayment(app)} style={{ background: '#F2F2F7', border: 'none', color: '#000', padding: '10px 20px', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', flex: 1 }}>입금 요청</button>
+                    )}
+                    <button onClick={() => handleTogglePayment(app)} style={{ background: payStatus === 'confirmed' ? '#f8f8f8' : '#000', border: 'none', color: payStatus === 'confirmed' ? '#8E8E93' : '#fff', padding: '10px 20px', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', flex: 1 }}>{payStatus === 'confirmed' ? '확인 취소' : '입금 확인'}</button>
                 </div>
             </div>
         );

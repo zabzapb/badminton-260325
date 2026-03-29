@@ -16,7 +16,19 @@ export default function DashboardPage() {
     const navigate = useNavigate();
     const { profile, tournaments, notifications, invitations, loading, loadDashboard, markNotificationRead, leaveTeam, setProfileLocally } = useDashboardStore();
     const [showInvitations, setShowInvitations] = useState(false);
+    const [dismissedBanners, setDismissedBanners] = useState<string[]>(() => {
+        const saved = localStorage.getItem("hctc_dismissed_banners");
+        return saved ? JSON.parse(saved) : [];
+    });
     const [hasCheckedInvitations, setHasCheckedInvitations] = useState(false);
+
+    const handleDismissBanner = (id: string) => {
+        setDismissedBanners(prev => {
+            const next = [...prev, id];
+            localStorage.setItem("hctc_dismissed_banners", JSON.stringify(next));
+            return next;
+        });
+    };
 
     useEffect(() => {
         loadDashboard();
@@ -90,32 +102,129 @@ export default function DashboardPage() {
                                 마스터 권한 복구하기 (Emergency Restore)
                             </button>
                         )}
-                        {invitations.length > 0 && (
-                            <div 
-                                className="invitation-banner animate-slide-up" 
-                                onClick={() => setShowInvitations(true)}
-                                style={{ 
-                                    padding: '16px 20px', borderRadius: '12px', background: '#FF6B3D', 
-                                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-                                    marginTop: '30px', marginBottom: '10px', cursor: 'pointer', boxShadow: '0 8px 24px rgba(255,107,61,0.2)' 
-                                }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Icon name="person" size={20} color="#fff" />
-                                    </div>
+                        {(() => {
+                            const cleanPhone = profile?.phone?.replace(/[^0-9]/g, "");
+                            const now = new Date();
 
-                                    <div>
-                                        <div style={{ fontSize: '15px', fontWeight: 800 }}>{invitations.length}건의 대회 파트너 요청이 있습니다</div>
-                                        <div style={{ fontSize: '12px', opacity: 0.85, fontWeight: 500 }}>{invitations[0].tournamentName}{invitations.length > 1 ? ' 등' : ''}</div>
-                                    </div>
+                            // 1. [초대] 파트너 요청 배너 리스트
+                            const invitationBanners = invitations.map(inv => {
+                                const invDeadline = inv.tournamentDate ? new Date(inv.tournamentDate + "T23:59:59") : null;
+                                const isPastInvDeadline = invDeadline && now > invDeadline;
+                                
+                                return {
+                                    id: `inv-${inv.id}`,
+                                    type: 'invitation',
+                                    tournamentName: inv.tournamentName,
+                                    message: isPastInvDeadline 
+                                        ? `${inv.applicantInfo?.realName}님의 파트너 요청을 접수 기간내에 승인하지 않아 [${inv.tournamentName}] ${inv.category} ${inv.group} 신청은 취소되었습니다.`
+                                        : `${inv.applicantInfo?.realName}님이 [${inv.tournamentName}] ${inv.category} 참가를 요청하였습니다.`,
+                                    onClick: () => setShowInvitations(true),
+                                    onClose: null, // 초대는 처리(승인/거절) 전까지 유지
+                                    icon: 'person'
+                                };
+                            });
+
+                            // 2. [거절] 파트너 거절 배너 리스트 (유령 제거 로직 포함)
+                            const rejectionBanners = tournaments.flatMap(t => {
+                                const userApps = (t.rawApps || []).filter((a: any) => a.userId === cleanPhone || a.partnerId === cleanPhone);
+                                const rejectedOnly = userApps.filter((a: any) => a.userId === cleanPhone && a.status === 'rejected');
+                                
+                                return rejectedOnly.filter((rej: any) => {
+                                    const hasValidAlternative = userApps.some((other: any) => 
+                                        other.id !== rej.id && other.category === rej.category && 
+                                        (other.status === 'confirmed' || other.status === 'pending' || other.status === 'waiting_partner')
+                                    );
+                                    return !hasValidAlternative;
+                                }).map((rej: any) => ({
+                                    id: `rej-${rej.id}`,
+                                    type: 'rejection',
+                                    tournamentName: t.name,
+                                    message: `${rej.partnerInfo?.realName || '파트너'}님이 [${t.name}] ${rej.category} 참가를 거절하였습니다.`,
+                                    onClick: () => navigate(`/tournament/${rej.tournamentId}/edit?appId=${rej.id}`),
+                                    onClose: () => handleDismissBanner(`rej-${rej.id}`),
+                                    icon: 'alert'
+                                }));
+                            });
+
+                            // 3. [경고/취소] 워닝 알림 배너 리스트 (취소 관련)
+                            const warningBanners = notifications.filter(n => n.type === 'warning').map(n => ({
+                                id: `noti-${n.id}`,
+                                type: 'warning',
+                                tournamentName: '',
+                                message: n.message || '',
+                                onClick: n.tournamentId ? () => navigate(`/tournament/${n.tournamentId}/apply`) : undefined,
+                                onClose: () => {
+                                    markNotificationRead(n.id!);
+                                    handleDismissBanner(`noti-${n.id}`);
+                                },
+                                icon: 'alert'
+                            }));
+
+                            // 4. [신청자 마감] 신청자 전용 마감 알림 가공 (waiting_partner 이고 마감 지난 신청건)
+                            const deadlineBanners = tournaments.flatMap(t => {
+                                const tDeadline = t.deadline ? new Date(t.deadline + "T23:59:59") : null;
+                                const isPast = tDeadline && now > tDeadline;
+                                if (!isPast) return [];
+
+                                return (t.rawApps || []).filter((a: any) => a.userId === cleanPhone && a.status === 'waiting_partner')
+                                    .map((a: any) => ({
+                                        id: `deadline-${a.id}`,
+                                        type: 'deadline',
+                                        tournamentName: t.name,
+                                        message: `접수 기한 내에 파트너 승인이 완료되지 않아, [${t.name}] ${a.category} ${a.group} 신청이 자동 취소되었습니다`,
+                                        onClick: () => navigate(`/tournament/${t.id}/edit?appId=${a.id}`),
+                                        onClose: () => handleDismissBanner(`deadline-${a.id}`),
+                                        icon: 'alert'
+                                    }));
+                            });
+
+                            const allBanners = [...invitationBanners, ...rejectionBanners, ...warningBanners, ...deadlineBanners]
+                                .filter(b => !dismissedBanners.includes(b.id));
+
+                            if (allBanners.length === 0) return null;
+
+                            return (
+                                <div className="banner-stack" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '30px', marginBottom: '10px' }}>
+                                    {allBanners.map(b => (
+                                        <div 
+                                            key={b.id} 
+                                            className="orange-banner animate-slide-up" 
+                                            onClick={b.onClick}
+                                            style={{ 
+                                                padding: '16px 20px', borderRadius: '12px', background: '#FF6B3D', 
+                                                color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+                                                cursor: b.onClick ? 'pointer' : 'default', boxShadow: '0 8px 24px rgba(255,107,61,0.2)' 
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                                                <div style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                    <Icon name={b.icon as any} size={18} color="#fff" />
+                                                </div>
+                                                <div style={{ fontSize: '13px', fontWeight: 700, lineHeight: '1.4', wordBreak: 'keep-all' }}>
+                                                    {b.message}
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '12px' }}>
+                                                {b.onClose ? (
+                                                    <div 
+                                                        onClick={(e) => { e.stopPropagation(); b.onClose?.(); }}
+                                                        style={{ padding: '6px', cursor: 'pointer', opacity: 0.8 }}
+                                                    >
+                                                        <Icon name="close" size={20} color="#fff" />
+                                                    </div>
+                                                ) : (
+                                                    <Icon name="arrow-right" size={18} color="#fff" />
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
 
-                        {notifications.length > 0 && (
-                            <div className="notification-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: invitations.length > 0 ? '0' : '30px', marginBottom: '16px' }}>
-                                {notifications.map(n => (
+                        {notifications.filter(n => n.type !== 'warning').length > 0 && (
+                            <div className="notification-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: invitations.length > 0 || tournaments.some(t => t.rawApps?.some((a: any) => a.userId === profile?.phone && a.status === 'rejected')) ? '12px' : '30px', marginBottom: '16px' }}>
+                                {notifications.filter(n => n.type !== 'warning').map(n => (
                                     <div 
                                         key={n.id} 
                                         className={`notification-card type-${n.type}`} 
@@ -220,44 +329,66 @@ export default function DashboardPage() {
                 title="파트너 요청 승인"
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '70vh', overflowY: 'auto', paddingBottom: '20px' }}>
-                    {invitations.map((inv) => (
-                        <div key={inv.id} style={{ background: '#F2F2F7', padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <div>
-                                <h4 style={{ fontSize: '17px', fontWeight: 800, marginBottom: '4px', color: '#1C1C1E' }}>{inv.tournamentName}</h4>
-                                <div style={{ fontSize: '13px', color: '#8E8E93' }}>{inv.tournamentDate?.replace(/-/g, ".")}</div>
-                            </div>
-                            
-                            <div style={{ fontSize: '15px', fontWeight: 600, color: '#1C1C1E' }}>
-                                {inv.category} {inv.group} 파트너 요청자 {inv.applicantInfo?.realName}
-                            </div>
+                    {invitations.map((inv) => {
+                        const now = new Date();
+                        const invDeadline = inv.tournamentDate ? new Date(inv.tournamentDate + "T23:59:59") : null;
+                        const isPastInvDeadline = invDeadline && now > invDeadline;
 
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <button 
-                                    onClick={async () => {
-                                        if (window.confirm("초대를 거절하시겠습니까?")) {
-                                            await updateApplicationStatus(inv.id, "rejected");
-                                            loadDashboard();
-                                        }
-                                    }}
-                                    style={{ flex: 1, height: '52px', background: '#fff', color: '#666', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
-                                >
-                                    거절
-                                </button>
-                                <button 
-                                    onClick={async () => {
-                                        const res = await updateApplicationStatus(inv.id, "confirmed");
-                                        if (res.success) {
-                                            alert("참가 신청이 수락되었습니다!");
-                                            loadDashboard();
-                                        }
-                                    }}
-                                    style={{ flex: 2, height: '52px', background: '#000', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                >
-                                    파트너 요청 승인
-                                </button>
+                        return (
+                            <div key={inv.id} style={{ background: '#F2F2F7', padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '12px' }}>
+                                <div>
+                                    <h4 style={{ fontSize: '17px', fontWeight: 800, marginBottom: '4px', color: '#1C1C1E' }}>{inv.tournamentName}</h4>
+                                    <div style={{ fontSize: '13px', color: '#8E8E93' }}>{inv.tournamentDate?.replace(/-/g, ".")}</div>
+                                </div>
+                                
+                                <div style={{ fontSize: '15px', fontWeight: 600, color: '#1C1C1E' }}>
+                                    {inv.category} {inv.group} 파트너 요청자 {inv.applicantInfo?.realName}
+                                </div>
+
+                                {isPastInvDeadline ? (
+                                    <div style={{ padding: '12px', background: 'rgba(255,59,48,0.05)', borderRadius: '12px', fontSize: '13px', color: '#FF3B30', fontWeight: 700, lineHeight: '1.4' }}>
+                                        {inv.applicantInfo?.realName}님의 파트너 요청을 접수 기간내에 승인하지 않아<br/>
+                                        [{inv.tournamentName}] {inv.category} {inv.group} 신청은 취소되었습니다.
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <button 
+                                            onClick={async () => {
+                                                if (window.confirm("초대를 거절하시겠습니까?")) {
+                                                    await updateApplicationStatus(inv.id, "rejected");
+                                                    loadDashboard();
+                                                }
+                                            }}
+                                            style={{ flex: 1, height: '52px', background: '#fff', color: '#666', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
+                                        >
+                                            거절
+                                        </button>
+                                        <button 
+                                            onClick={async () => {
+                                                const res = await updateApplicationStatus(inv.id, "confirmed");
+                                                if (res.success) {
+                                                    // [추가] 파트너 승인 시 신청자에게 알림 전송
+                                                    await createNotification({
+                                                        userId: inv.userId,
+                                                        type: 'info',
+                                                        tournamentId: inv.tournamentId,
+                                                        message: `${profile?.realName || '파트너'}님이 [${inv.tournamentName}] ${inv.category} 참가를 승인했습니다.`,
+                                                        isRead: false,
+                                                        createdAt: new Date().toISOString()
+                                                    });
+                                                    alert("참가 신청이 수락되었습니다!");
+                                                    loadDashboard();
+                                                }
+                                            }}
+                                            style={{ flex: 2, height: '52px', background: '#000', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                        >
+                                            파트너 요청 승인
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </BottomSheet>
         </div>
