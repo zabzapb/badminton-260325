@@ -143,7 +143,7 @@ export const useTournamentData = () => {
             
             if (result.success) {
                 await loadTournaments(); 
-                return { success: true };
+                return { success: true, id: tournamentId };
             } else {
                 return { success: false, error: (result.error as any)?.message || "알 수 없는 오류" };
             }

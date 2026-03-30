@@ -11,7 +11,7 @@ export const useUserProfileForm = () => {
     const { profile, setProfile, persistProfile } = useUserStore();
     
     const [formData, setFormData] = useState({
-        realName: "", nickname: "", gender: "M", birthDate: "", level: "D", club: "", phone: "",
+        realName: "", nickname: "", referrer: "", gender: "M", birthDate: "", level: "D", club: "한콕두콕", phone: "",
         tshirtGender: "남성", tshirtSize: "-", avatarUrl: "", avatarChangeCount: 0, id: "", isVerified: false,
         originalRealName: "", originalGender: "", originalPhone: "", originalLevel: "", originalBirthDate: ""
     });
@@ -22,6 +22,8 @@ export const useUserProfileForm = () => {
         if (profile) {
             setFormData({
                 ...profile as any,
+                referrer: profile.referrer || "",
+                club: profile.club || "한콕두콕",
                 birthDate: profile.birthDate || (profile.birthYear ? `${profile.birthYear}-01-01` : ""),
                 originalBirthDate: profile.birthDate || (profile.birthYear ? `${profile.birthYear}-01-01` : ""),
                 originalRealName: profile.realName, 

@@ -25,6 +25,7 @@ export interface UserProfile {
   lastLoginAt?: string;
   registeredBy?: string;
   pendingLinkId?: string; // [추가] 운영자 승인 대기 중인 기존 계정 ID
+  referrer?: string; // [추가] 추천인 입력 * 용병인 경우 파트너 이름 작성
   // Metadata for edit tracking
   originalRealName?: string;
   originalGender?: string;

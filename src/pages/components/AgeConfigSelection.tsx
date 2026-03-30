@@ -18,12 +18,18 @@ export const AgeConfigSelection: React.FC<Props> = ({ formHook, hasLevels, hasEv
     } = formHook;
 
     const modes = [
-        { id: 'normal', label: '일반 모드', desc: '연령대별 기본 구분 (20대, 30대...)', icon: 'person' },
-        { id: 'ageInput', label: '합산 모드', desc: '파트너와의 나이 합계 기준 (80+, 100+...)', icon: 'plus' },
-        { id: 'yearInput', label: '입력 모드', desc: '직접 연령대 및 조건 입력', icon: 'calendar' }
+        { id: 'normal', label: '일반 모드', desc: '연령대별 기본 구분 (20대, 30대...)', icon: 'person', disabled: false },
+        { id: 'ageInput', label: '합산 모드', desc: '파트너와의 나이 합계 기준 (80+, 100+...)', icon: 'plus', disabled: true },
+        { id: 'yearInput', label: '입력 모드', desc: '직접 연령대 및 조건 입력', icon: 'calendar', disabled: true }
     ] as const;
-
+ 
     const handleModeClick = (modeId: typeof modes[number]['id']) => {
+        const modeCfg = modes.find(m => m.id === modeId);
+        if (modeCfg?.disabled) {
+            alert("해당 모드는 차기 업데이트에 반영될 예정입니다.");
+            return;
+        }
+
         if (ageMode === modeId) {
             setAgeMode(null);
         } else {
@@ -57,27 +63,36 @@ export const AgeConfigSelection: React.FC<Props> = ({ formHook, hasLevels, hasEv
                     먼저 위에서 설정할 종목과 급수를 선택해주세요.
                 </div>
             )}
-
+ 
             <div className="age-config-box no-border">
                 <div className="age-mode-list">
                     {modes.map(mode => {
                         const isActive = ageMode === mode.id;
+                        const isDisabled = mode.disabled;
                         return (
-                            <div key={mode.id} className="age-mode-container">
+                            <div key={mode.id} className="age-mode-container" style={{ position: 'relative' }}>
                                 <div 
-                                    className={`age-mode-card ${isActive ? 'active' : ''}`} 
+                                    className={`age-mode-card ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`} 
                                     onClick={() => handleModeClick(mode.id)}
+                                    style={{ 
+                                        opacity: isDisabled ? 0.6 : 1, 
+                                        cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                        filter: isDisabled ? 'grayscale(0.5)' : 'none'
+                                    }}
                                 >
                                     <div className="age-mode-icon-box">
-                                        <Icon name={mode.icon as any} size={24} color={isActive ? '#fff' : '#FF6B3D'} />
+                                        <Icon name={mode.icon as any} size={24} color={isActive ? '#fff' : (isDisabled ? '#8E8E93' : '#FF6B3D')} />
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <div className="mode-label">{mode.label}</div>
+                                        <div className="mode-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            {mode.label}
+                                            {isDisabled && <span style={{ fontSize: '10px', background: '#F2F2F7', padding: '2px 6px', borderRadius: '4px', color: '#8E8E93' }}>준비 중</span>}
+                                        </div>
                                         <div className="mode-desc">{mode.desc}</div>
                                     </div>
                                     {isActive && <Icon name="check" size={20} color="#fff" />}
                                 </div>
-
+ 
                                 {isActive && (
                                     <div className="age-mode-details">
                                         {mode.id === 'normal' && (

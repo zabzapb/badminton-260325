@@ -41,8 +41,12 @@ export default function TournamentRegistrationPage() {
             const result = await saveTournamentData(formData);
             if (result.success) { 
                 alert("대회 정보가 저장되었습니다.");
-                setView("list"); 
-                setFormData(INITIAL_FORM_DATA); 
+                // [수정] 목록으로 나가지 않고 현재 페이지 유지, 신규 생성 시 ID 업데이트
+                if (result.id && !formData.id) {
+                    setFormData(prev => ({ ...prev, id: result.id }));
+                }
+                // [추가] 저장 완료 인지를 위해 상단으로 스크롤 이동
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
                 alert("저장 실패: " + result.error);
             }

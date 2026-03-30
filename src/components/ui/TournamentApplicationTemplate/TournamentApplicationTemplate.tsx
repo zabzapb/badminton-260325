@@ -339,7 +339,11 @@ function TournamentHistoryCard({ app, tournament, profile, tournamentCats, tourn
 
     const catCfg = tournamentCats.find((c: any) => c.type === category || getCategoryCode(c.type) === getCategoryCode(category));
     const grades = Array.from(new Set((catCfg?.groups || []).map((g: string) => extractInfo(g).grade))).sort((a: any, b: any) => LEVEL_LIST.indexOf(a) - LEVEL_LIST.indexOf(b)) as string[];
-    const ages = Array.from(new Set((catCfg?.groups || []).map((g: string) => extractInfo(g).ageGroup))) as string[];
+    const ages = Array.from(new Set(
+        (catCfg?.groups || [])
+            .filter((g: string) => extractInfo(g).grade === grade) // [수정] 선택된 급수에 해당하는 그룹만 필터링
+            .map((g: string) => extractInfo(g).ageGroup)
+    )) as string[];
 
     return (
         <div id={`app-card-${app.id}`} className="application-form-card" style={{ padding: '24px', background: '#fff', borderRadius: '16px', border: '1px solid #E5E5EA', boxShadow: '0 8px 24px rgba(0,0,0,0.05)' }}>
@@ -449,7 +453,11 @@ function ApplicationDraftCard({ id, tournament, profile, tournamentCats, allUser
 
     const catCfg = tournamentCats.find((c: any) => c.type === category);
     const grades = Array.from(new Set((catCfg?.groups || []).map((g: string) => extractInfo(g).grade))).sort((a: any, b: any) => LEVEL_LIST.indexOf(a) - LEVEL_LIST.indexOf(b)) as string[];
-    const ages = Array.from(new Set((catCfg?.groups || []).map((g: string) => extractInfo(g).ageGroup))) as string[];
+    const ages = Array.from(new Set(
+        (catCfg?.groups || [])
+            .filter((g: string) => !grade || extractInfo(g).grade === grade) // [수정] 선택된 급수에 해당하는 그룹만 필터링
+            .map((g: string) => extractInfo(g).ageGroup)
+    )) as string[];
 
     useEffect(() => {
         if (category && catCfg) {

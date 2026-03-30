@@ -75,6 +75,16 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div className="form-group">
+                        <label className="form-label">추천인 입력 * 용병인 경우 파트너 이름 작성</label>
+                        <input 
+                            name="referrer"
+                            className="form-input-premium" 
+                            placeholder="추천인 또는 파트너 이름을 적어주세요" 
+                            value={formData.referrer || ""} 
+                            onChange={handleChange} 
+                        />
+                    </div>
+                    <div className="form-group">
                         <label className="form-label">성별</label>
                         <div className="register-options-grid">
                             <button type="button" className={`option-chip ${formData.gender === "M" ? "option-chip--selected" : ""}`} disabled>남성</button>
