@@ -163,15 +163,13 @@ export const ApplicationFields: React.FC<ApplicationFieldsProps> = ({
             {/* 2. Team Section - Show only if Category is selected, or if it's an existing app (status exists) */}
             {(selectedCategory || status) && (
                 <div className="team-section animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    </div>
-
                     <div className="team-vertical-stack" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {(() => {
                             const leader = isApplicant ? profile : currentPartner;
                             const member = isApplicant ? currentPartner : profile;
                             return (
                                 <>
+                                    {/* 신청자 본인 카드 - 단식/복식 공통 */}
                                     <div style={{ background: '#fff', borderRadius: '12px', border: '2px solid #E5E5EA', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
                                         <PlayerProfileCard 
                                             profile={leader} variant="mini" theme="light"
@@ -179,26 +177,30 @@ export const ApplicationFields: React.FC<ApplicationFieldsProps> = ({
                                             isPending={false} 
                                         />
                                     </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                        {member ? (
-                                            <div style={{ background: '#fff', borderRadius: '12px', border: status === "waiting_partner" ? '2px solid #C7C7CC' : '2px solid #000', overflow: 'hidden', position: 'relative', boxShadow: '0 8px 16px rgba(0,0,0,0.08)' }}>
-                                                <PlayerProfileCard 
-                                                    profile={member as any} variant="mini" theme="light"
-                                                    style={{ border: 'none', background: 'transparent' }} 
-                                                    isPending={status === "waiting_partner"}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <button 
-                                                type="button"
-                                                onClick={() => setIsSearchOpen(true)}
-                                                style={{ minHeight: '64px', background: '#F2F2F7', borderRadius: '12px', border: '1.5px dashed #C7C7CC', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#8E8E93', cursor: 'pointer', width: '100%' }}
-                                            >
-                                                <Icon name="person" size={20} color="#C7C7CC" />
-                                                <span style={{ fontSize: '13px', fontWeight: 600 }}>신청한 종목으로 다시 파트너를 선택합니다.</span>
-                                            </button>
-                                        )}
-                                    </div>
+
+                                    {/* 파트너 섹션 - 복식 종목일 때만 표시 */}
+                                    {isDoubles && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            {member ? (
+                                                <div style={{ background: '#fff', borderRadius: '12px', border: status === "waiting_partner" ? '2px solid #C7C7CC' : '2px solid #000', overflow: 'hidden', position: 'relative', boxShadow: '0 8px 16px rgba(0,0,0,0.08)' }}>
+                                                    <PlayerProfileCard 
+                                                        profile={member as any} variant="mini" theme="light"
+                                                        style={{ border: 'none', background: 'transparent' }} 
+                                                        isPending={status === "waiting_partner"}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setIsSearchOpen(true)}
+                                                    style={{ minHeight: '64px', background: '#F2F2F7', borderRadius: '12px', border: '1.5px dashed #C7C7CC', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#8E8E93', cursor: 'pointer', width: '100%' }}
+                                                >
+                                                    <Icon name="person" size={20} color="#C7C7CC" />
+                                                    <span style={{ fontSize: '13px', fontWeight: 600 }}>파트너를 선택해 주세요.</span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
                                 </>
                             );
                         })()}
@@ -206,32 +208,34 @@ export const ApplicationFields: React.FC<ApplicationFieldsProps> = ({
                 </div>
             )}
 
-            {/* 3. Partner Search UI - Moved to BottomSheet */}
-            <BottomSheet 
-                isOpen={isSearchOpen} 
-                onClose={() => setIsSearchOpen(false)} 
-                title="파트너 검색 및 임시 플레이어 등록"
-            >
-                <div style={{ paddingBottom: '32px' }}>
-                    {isAppOwner && !currentPartner && onPartnerSelect && isDoubles && selectedCategory && (
-                        <PartnerSearchSection 
-                            onSelectPartner={(p: any) => {
-                                onPartnerSelect(p);
-                                setIsSearchOpen(false); // Close on selection
-                            }} 
-                            currentPartner={currentPartner}
-                            selectedCategory={selectedCategory}
-                            baseYear={tournament.baseYear || 2026}
-                            selfPhone={profile.phone}
-                            applicantGender={profile.gender}
-                            applyGrade={selectedGrade}
-                            applyAgeGroup={selectedAgeGroup}
-                            tournamentRegion={tournament.regionType || 'local'}
-                            excludePhones={excludePhones}
-                        />
-                    )}
-                </div>
-            </BottomSheet>
+            {/* 3. Partner Search BottomSheet - 복식 종목일 때만 마운트 */}
+            {isDoubles && (
+                <BottomSheet 
+                    isOpen={isSearchOpen} 
+                    onClose={() => setIsSearchOpen(false)} 
+                    title="파트너 검색 및 임시 플레이어 등록"
+                >
+                    <div style={{ paddingBottom: '32px' }}>
+                        {isAppOwner && !currentPartner && onPartnerSelect && selectedCategory && (
+                            <PartnerSearchSection 
+                                onSelectPartner={(p: any) => {
+                                    onPartnerSelect(p);
+                                    setIsSearchOpen(false);
+                                }} 
+                                currentPartner={currentPartner}
+                                selectedCategory={selectedCategory}
+                                baseYear={tournament.baseYear || 2026}
+                                selfPhone={profile.phone}
+                                applicantGender={profile.gender}
+                                applyGrade={selectedGrade}
+                                applyAgeGroup={selectedAgeGroup}
+                                tournamentRegion={tournament.regionType || 'local'}
+                                excludePhones={excludePhones}
+                            />
+                        )}
+                    </div>
+                </BottomSheet>
+            )}
         </div>
     );
 };
