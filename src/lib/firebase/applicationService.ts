@@ -188,10 +188,17 @@ export const getApplicationsForTournaments = async (tournamentIds: string[]) => 
 export const updatePaymentStatus = async (applicationId: string, paymentStatus: "pending" | "confirmed") => {
   try {
     const appRef = doc(db, COLLECTION_APPLICATIONS, applicationId);
-    await updateDoc(appRef, {
+    const updates: any = {
       paymentStatus,
       updatedAt: new Date().toISOString()
-    });
+    };
+    
+    // [Phase 3] 관리자가 입금 확인 시, 파트너 승인 여부와 관계없이 '신청 확정'으로 강제 전환
+    if (paymentStatus === "confirmed") {
+        updates.status = "confirmed";
+    }
+
+    await updateDoc(appRef, updates);
     return { success: true };
   } catch (error: any) {
     console.error("Error updating payment status:", error);
