@@ -3,6 +3,7 @@ import { Icon } from "@/components/ui/Icon";
 import { getStandardCategoryCode, updatePaymentStatus, cancelApplication } from "@/lib/firebase/applicationService";
 import { extractInfo } from "@/utils/tournamentRules";
 import { calculateTournamentStats } from "@/utils/tournamentUtils";
+import { ExcelGeneratorService } from "@/services/ExcelGeneratorService";
 
 interface Props {
     apps: any[];
@@ -16,6 +17,7 @@ type FilterMode = 'all' | 'byCategory' | 'byGrade' | 'unpaid';
 
 export function ApplicantManagement({ apps, tournament, fetchingApps, onDownloadExcel, onRefresh }: Props) {
     const [filterMode, setFilterMode] = useState<FilterMode>('all');
+    const [exportingForOrganizer, setExportingForOrganizer] = useState(false);
 
     // 1. 통합 통계 로직 사용 (회계 데이터 포함)
     const stats = calculateTournamentStats(apps, tournament);
@@ -74,6 +76,39 @@ export function ApplicantManagement({ apps, tournament, fetchingApps, onDownload
         if (!window.confirm("이 접수 내역을 삭제(취소)하시겠습니까?")) return;
         const res = await cancelApplication(appId);
         if (res.success) onRefresh?.();
+    };
+
+    /**
+     * [UI 통합] 주최 측 전송용 엑셀 다운로드 핸들러
+     * - 기본적으로 '결제 완료(confirmed)'된 데이터만 필터링하여 익스포트
+     */
+    const handleDownloadForOrganizer = async () => {
+        if (exportingForOrganizer) return;
+
+        // [수정] 미입금팀도 포함하여 전체 활성 신청 내역 추출
+        const targetApps = apps.filter(app => 
+            app.status !== 'cancelled' && 
+            app.status !== 'rejected'
+        );
+
+        if (targetApps.length === 0) {
+            alert("출력할 수 있는 신청 내역이 없습니다.");
+            return;
+        }
+
+        try {
+            setExportingForOrganizer(true);
+            const res = await ExcelGeneratorService.generateTournamentExcel(targetApps);
+            if (res?.success) {
+                const today = new Date().toISOString().split('T')[0];
+                alert(`2026_마포구_한콕두콕_${today}.xlsx 파일이 생성되었습니다.`);
+            }
+        } catch (error) {
+            console.error("[Excel Export Error]", error);
+            alert("엑셀 데이터 변환 중 오류가 발생했습니다. 로그를 확인하세요.");
+        } finally {
+            setExportingForOrganizer(false);
+        }
     };
 
     // 2. 필터링 및 정렬 로직
@@ -262,18 +297,40 @@ export function ApplicantManagement({ apps, tournament, fetchingApps, onDownload
                     })}
                 </div>
 
-                <button 
-                    className="btn-excel-download" 
-                    style={{ 
-                        background: '#000', color: '#fff', borderRadius: '8px', 
-                        padding: '12px 20px', fontSize: '14px', fontWeight: 800, 
-                        cursor: 'pointer', border: 'none', display: 'flex', 
-                        alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' 
-                    }} 
-                    onClick={onDownloadExcel}
-                >
-                    <Icon name="document" size={16} color="#fff" /> Excel 다운로드
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                        className="btn-excel-organizer" 
+                        style={{ 
+                            background: '#1D6F42', color: '#fff', borderRadius: '8px', 
+                            padding: '12px 20px', fontSize: '14px', fontWeight: 800, 
+                            cursor: exportingForOrganizer ? 'not-allowed' : 'pointer', border: 'none', display: 'flex', 
+                            alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(29,111,66,0.2)',
+                            opacity: exportingForOrganizer ? 0.7 : 1, transition: 'all 0.2s'
+                        }} 
+                        onClick={handleDownloadForOrganizer}
+                        disabled={exportingForOrganizer}
+                    >
+                        {exportingForOrganizer ? (
+                            <div style={{ width: '16px', height: '16px', border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                        ) : (
+                            <Icon name="document" size={16} color="#fff" />
+                        )}
+                        주최 측 전송용 엑셀
+                    </button>
+
+                    <button 
+                        className="btn-excel-download" 
+                        style={{ 
+                            background: '#000', color: '#fff', borderRadius: '8px', 
+                            padding: '12px 20px', fontSize: '14px', fontWeight: 800, 
+                            cursor: 'pointer', border: 'none', display: 'flex', 
+                            alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' 
+                        }} 
+                        onClick={onDownloadExcel}
+                    >
+                        <Icon name="document" size={16} color="#fff" /> 관리용 엑셀
+                    </button>
+                </div>
             </div>
             
             {/* 4. Applicant List Rendering */}

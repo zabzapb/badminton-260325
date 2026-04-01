@@ -45,8 +45,11 @@
     *   **향후:** GitHub Secrets에 모든 환경 변수(API Key, Secret 등) 설정을 완료한 후, Push/Merge 시 자동으로 빌드 및 배포되는 **GitHub Actions CI/CD 파이프라인**으로 전면 전환한다.
 *   **Environment Variable Security (환경 변수 보안 강화)**:
     *   클라이언트 측에 노출되는 `VITE_` 접두사 변수 외에, 민감한 Secret 값들은 향후 Firebase Functions(Backend)에서만 접근하도록 아키텍처를 고도화한다.
+*   **Grade System Integration (급수 통합 시스템 개발)**:
+    *   현재 구현된 **연령대 통합(`integrated` mode)** 로직에 이어, 특정 **급수(Grade)를 하나로 묶어 운영**할 수 있는 아키텍처 고도화.
+    *   S/A급 또는 B/C급 등을 하나의 부문으로 통합하여 대진표를 구성하고, 유연하게 참여 인원을 관리하는 운영 시스템 구축.
 *   **UI/UX Aesthetic Polish (시각적 완성도 강화)**:
     *   데이터 로딩 지연이나 일시적 오류 시 노출되는 `profile_sample.png`를 서비스 아이덴티티에 맞는 **범용 아바타 이미지(Universal Avatar)** 또는 **디폴트 이니셜 UI**로 교체하여 프리미엄한 사용자 경험을 유지한다.
 
-**업데이트 일시:** 2026-03-30
+**업데이트 일시:** 2026-04-01
 **상태:** 기록 및 관리됨

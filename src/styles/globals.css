@@ -544,3 +544,11 @@ textarea {
   vertical-align: middle;
   flex-shrink: 0;
 }
+
+/* ─────────────────────────────────────────────
+   Animations
+───────────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
