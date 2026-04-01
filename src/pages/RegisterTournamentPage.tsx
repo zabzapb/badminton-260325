@@ -204,22 +204,43 @@ export default function TournamentRegistrationPage() {
                     <button type="button" className="btn-nav-back" onClick={() => setView("list")} style={{ width: '60px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Icon name="close" size={20} color="#000" />
                     </button>
+                    
+                    {/* [수정] 신청 현황 탭에서는 저장/삭제 비활성화 */}
                     <button 
                         type="button" 
                         className="btn-nav-next" 
-                        style={{ flex: 1, background: '#FF6B3D', border: 'none', opacity: isSaving ? 0.7 : 1 }} 
+                        style={{ 
+                            flex: 1, 
+                            background: activeTab === 'applicants' ? '#C7C7CC' : '#FF6B3D', 
+                            border: 'none', 
+                            opacity: (isSaving || activeTab === 'applicants') ? 0.7 : 1,
+                            cursor: activeTab === 'applicants' ? 'not-allowed' : 'pointer'
+                        }} 
                         onClick={handleSave}
-                        disabled={isSaving}
+                        disabled={isSaving || activeTab === 'applicants'}
                     >
-                        {isSaving ? "처리 중..." : (formData.id ? (activeTab === 'setup' ? "대회 종목 설정 저장" : "대회 정보 저장") : "신규 대회 등록")}
+                        {isSaving ? "처리 중..." : (activeTab === 'applicants' ? "저장 대상 없음" : (formData.id ? (activeTab === 'setup' ? "대회 종목 설정 저장" : "대회 정보 저장") : "신규 대회 등록"))}
                     </button>
+
                     {formData.id && (
                         <button 
                             type="button" 
-                            style={{ width: '48px', height: '48px', borderRadius: '8px', background: '#F2F2F7', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            style={{ 
+                                width: '48px', 
+                                height: '48px', 
+                                borderRadius: '8px', 
+                                background: '#F2F2F7', 
+                                border: 'none', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                opacity: activeTab === 'applicants' ? 0.3 : 1,
+                                cursor: activeTab === 'applicants' ? 'not-allowed' : 'pointer'
+                            }}
                             onClick={handleDelete}
+                            disabled={activeTab === 'applicants'}
                         >
-                            <Icon name="trash" size={20} color="#FF3B30" />
+                            <Icon name="trash" size={20} color={activeTab === 'applicants' ? "#8E8E93" : "#FF3B30"} />
                         </button>
                     )}
                 </footer>

@@ -98,10 +98,12 @@ export function ApplicantManagement({ apps, tournament, fetchingApps, onDownload
 
         try {
             setExportingForOrganizer(true);
-            const res = await ExcelGeneratorService.generateTournamentExcel(targetApps);
+            const tName = tournament?.name || "대회";
+            const res = await ExcelGeneratorService.generateTournamentExcel(targetApps, tName);
             if (res?.success) {
                 const today = new Date().toISOString().split('T')[0];
-                alert(`2026_마포구_한콕두콕_${today}.xlsx 파일이 생성되었습니다.`);
+                const year = new Date().getFullYear();
+                alert(`${year}_${tName}_한콕두콕_${today}.xlsx 파일이 생성되었습니다.`);
             }
         } catch (error) {
             console.error("[Excel Export Error]", error);
@@ -316,19 +318,6 @@ export function ApplicantManagement({ apps, tournament, fetchingApps, onDownload
                             <Icon name="document" size={16} color="#fff" />
                         )}
                         주최 측 전송용 엑셀
-                    </button>
-
-                    <button 
-                        className="btn-excel-download" 
-                        style={{ 
-                            background: '#000', color: '#fff', borderRadius: '8px', 
-                            padding: '12px 20px', fontSize: '14px', fontWeight: 800, 
-                            cursor: 'pointer', border: 'none', display: 'flex', 
-                            alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' 
-                        }} 
-                        onClick={onDownloadExcel}
-                    >
-                        <Icon name="document" size={16} color="#fff" /> 관리용 엑셀
                     </button>
                 </div>
             </div>
