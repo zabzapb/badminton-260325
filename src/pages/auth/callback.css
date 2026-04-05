@@ -27,17 +27,19 @@
 
 .loading-bg-img {
     width: 100%;
-    height: 100%;
+    height: auto;
+    max-width: 480px; /* Adjusted to be appropriate relative to screen */
     object-fit: contain;
+    transform: translateY(-100px); /* Match HomePage logo correction */
 }
 
 .loading-text-overlay-centered {
     position: absolute;
-    bottom: 25%;
+    top: calc(50% + 60px); /* Positioned below image center */
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -100px); /* Sync with image translation */
     text-align: center;
-    color: #fff; /* 블랙 배경에 맞춘 화이트 텍스트 */
+    color: #fff;
     font-size: 13px;
     font-weight: 600;
     line-height: 1.6;

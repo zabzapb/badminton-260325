@@ -88,7 +88,7 @@ export default function NaverAuthCallback() {
                 <div className="callback-loading-ui-fullscreen">
                     <img src="/loading_03.gif" alt="인증 처리 중" className="loading-bg-img" />
                     <div className="loading-text-overlay-centered">
-                        네이버 인증과 한콕두콕 인증을 처리 중입니다.
+                        한콕두콕 플레이어 등록을 위한 로그인을 진행 중 입니다.
                     </div>
                 </div>
             )}
