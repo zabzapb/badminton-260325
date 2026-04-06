@@ -193,7 +193,7 @@ export const updatePaymentStatus = async (applicationId: string, paymentStatus: 
       updatedAt: new Date().toISOString()
     };
     
-    // [Phase 3] 관리자가 입금 확인 시, 파트너 승인 여부와 관계없이 '신청 확정'으로 강제 전환
+    // [Phase 3] 관리자가 입금 확인 시, 파트너 승인 여부와 관계없이 '참가 확정'으로 강제 전환
     if (paymentStatus === "confirmed") {
         updates.status = "confirmed";
     }

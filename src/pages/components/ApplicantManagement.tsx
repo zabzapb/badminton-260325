@@ -146,7 +146,7 @@ export function ApplicantManagement({ apps, tournament, fetchingApps, onDownload
         const cleanAge = ageGroup.replace('대', '');
         
         const isAwaiting = app.status === 'waiting_partner';
-        const statusLabel = isAwaiting ? '승인 대기' : '신청 확정';
+        const statusLabel = isAwaiting ? '승인 대기' : '참가 확정';
         const statusColor = isAwaiting ? '#007AFF' : '#34C759';
 
         const payStatus = app.paymentStatus || 'pending';

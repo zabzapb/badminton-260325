@@ -124,7 +124,7 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
             partnerId: partner?.id || partner?.phone?.replace(/[^0-9]/g, "") || null,
             partnerInfo: partner ? { ...partner, phone: partner.phone?.replace(/[^0-9]/g, "") } : null,
             applicantInfo: profile ? { ...profile, phone: profile.phone?.replace(/[^0-9]/g, "") } : null,
-            status: isDoubles ? (!!partner ? "waiting_partner" : "partner_required") : "pending",
+            status: isDoubles ? (!!partner ? "waiting_partner" : "partner_required") : "confirmed",
             paymentStatus: "pending", // [추가] 초기 입금 상태는 대기
             createdAt: new Date().toISOString(), 
             updatedAt: new Date().toISOString()
