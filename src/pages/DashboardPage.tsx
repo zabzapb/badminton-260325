@@ -116,7 +116,7 @@ export default function DashboardPage() {
                                     type: 'invitation',
                                     tournamentName: inv.tournamentName,
                                     message: isPastInvDeadline 
-                                        ? `${inv.applicantInfo?.realName}님의 파트너 요청을 접수 기간내에 승인하지 않아 [${inv.tournamentName}] ${inv.category} ${inv.group} 신청은 취소되었습니다.`
+                                        ? `${inv.applicantInfo?.realName}님의 파트너 요청을 접수 기간 내에 승인하지 않았습니다.`
                                         : `${inv.applicantInfo?.realName}님이 [${inv.tournamentName}] ${inv.category} 참가를 요청하였습니다.`,
                                     onClick: () => setShowInvitations(true),
                                     onClose: null, // 초대는 처리(승인/거절) 전까지 유지
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                                         id: `deadline-${a.id}`,
                                         type: 'deadline',
                                         tournamentName: t.name,
-                                        message: `접수 기한 내에 파트너 승인이 완료되지 않아, [${t.name}] ${a.category} ${a.group} 신청이 자동 취소되었습니다`,
+                                        message: `[${t.name}] ${a.category} ${a.group} 파트너 미승인 상태입니다. 입금확인 시 참가 확정이 됩니다.`,
                                         onClick: () => navigate(`/tournament/${t.id}/edit?appId=${a.id}`),
                                         onClose: () => handleDismissBanner(`deadline-${a.id}`),
                                         icon: 'alert'
@@ -347,8 +347,7 @@ export default function DashboardPage() {
 
                                 {isPastInvDeadline ? (
                                     <div style={{ padding: '12px', background: 'rgba(255,59,48,0.05)', borderRadius: '12px', fontSize: '13px', color: '#FF3B30', fontWeight: 700, lineHeight: '1.4' }}>
-                                        {inv.applicantInfo?.realName}님의 파트너 요청을 접수 기간내에 승인하지 않아<br/>
-                                        [{inv.tournamentName}] {inv.category} {inv.group} 신청은 취소되었습니다.
+                                        {inv.applicantInfo?.realName}님의 파트너 요청을 접수 기간 내에 승인하지 않았습니다.
                                     </div>
                                 ) : (
                                     <div style={{ display: 'flex', gap: '10px' }}>

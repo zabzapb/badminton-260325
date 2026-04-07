@@ -353,7 +353,7 @@ function TournamentHistoryCard({ app, tournament, profile, tournamentCats, tourn
                     <span style={{ fontSize: '11px', fontWeight: 600, color: (app.status === 'confirmed') ? '#34C759' : (app.status === 'rejected' ? '#FF3B30' : '#FF9500') }}>
                         {app.status === 'confirmed' ? '참가 확정' : (
                             app.status === 'waiting_partner' 
-                                ? (isPastDeadline ? '기간 만료 자동 취소' : '파트너 승인 대기') 
+                                ? (isPastDeadline ? '승인 마감' : '파트너 승인 대기') 
                                 : (app.status === 'rejected' ? '신청 거절됨 (파트너)' : '승인 대기')
                         )}
                     </span>
@@ -365,8 +365,7 @@ function TournamentHistoryCard({ app, tournament, profile, tournamentCats, tourn
                     )}
                     {app.status === 'waiting_partner' && isPastDeadline && (
                         <div style={{ marginTop: '8px', padding: '12px', background: 'rgba(255,59,48,0.05)', borderRadius: '12px', fontSize: '12px', color: '#FF3B30', fontWeight: 700, lineHeight: '1.4' }}>
-                            접수 기한 내에 파트너 승인이 완료되지 않아,<br/>
-                            [{(tournament as any).name}] {category} {grade} 신청이 자동 취소되었습니다.
+                            접수 기한 내에 파트너 승인이 완료되지 않았습니다.
                         </div>
                     )}
                 </div>
