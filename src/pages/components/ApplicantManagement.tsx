@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { getStandardCategoryCode, updatePaymentStatus, cancelApplication } from "@/lib/firebase/applicationService";
 import { extractInfo } from "@/utils/tournamentRules";
-import { calculateTournamentStats } from "@/utils/tournamentUtils";
+import { calculateTournamentStats, LEVEL_LIST } from "@/utils/tournamentUtils";
 import { ExcelGeneratorService } from "@/services/ExcelGeneratorService";
 
 interface Props {
@@ -124,19 +124,52 @@ export function ApplicantManagement({ apps, tournament, fetchingApps, onDownload
     // 그룹화가 필요한 모드일 경우 정렬 수행
     if (filterMode === 'byCategory') {
         processedApps.sort((a, b) => {
+            // 1. 종목 우선순위: 남복(MD) > 여복(WD) > 혼복(XD) > 단식(MS, WS, S)
             const catA = getStandardCategoryCode(a.category);
             const catB = getStandardCategoryCode(b.category);
-            if (catA !== catB) return catA.localeCompare(catB);
+            
+            const catPriority: Record<string, number> = { 
+                'MD': 1, 'WD': 2, 'XD': 3, 
+                'MS': 4, 'WS': 4, 'S': 4 
+            };
+            
+            const pA = catPriority[catA] || 99;
+            const pB = catPriority[catB] || 99;
+            
+            if (pA !== pB) return pA - pB;
+
+            // 2. 나이 우선순위: 어린 순 (20대 < 30대 < ...)
+            const { ageGroup: ageStrA } = extractInfo(a.group);
+            const { ageGroup: ageStrB } = extractInfo(b.group);
+            const ageA = parseInt(ageStrA) || 0;
+            const ageB = parseInt(ageStrB) || 0;
+            
+            if (ageA !== ageB) return ageA - ageB;
+
+            // 3. 급수 우선순위: S > A > B > C > D > E (LEVEL_LIST 인덱스 순)
             const { grade: gradeA } = extractInfo(a.group);
             const { grade: gradeB } = extractInfo(b.group);
-            return gradeA.localeCompare(gradeB);
+            
+            const idxA = LEVEL_LIST.indexOf(gradeA);
+            const idxB = LEVEL_LIST.indexOf(gradeB);
+            
+            return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
         });
     } else if (filterMode === 'byGrade') {
         processedApps.sort((a, b) => {
             const { grade: gradeA } = extractInfo(a.group);
             const { grade: gradeB } = extractInfo(b.group);
-            if (gradeA !== gradeB) return gradeA.localeCompare(gradeB);
-            return getStandardCategoryCode(a.category).localeCompare(getStandardCategoryCode(b.category));
+            
+            const idxA = LEVEL_LIST.indexOf(gradeA);
+            const idxB = LEVEL_LIST.indexOf(gradeB);
+            
+            if (idxA !== idxB) return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+            
+            // 급수가 같으면 종목 우선순위 적용
+            const catA = getStandardCategoryCode(a.category);
+            const catB = getStandardCategoryCode(b.category);
+            const catPriority: Record<string, number> = { 'MD': 1, 'WD': 2, 'XD': 3, 'MS': 4, 'WS': 4, 'S': 4 };
+            return (catPriority[catA] || 99) - (catPriority[catB] || 99);
         });
     }
 
