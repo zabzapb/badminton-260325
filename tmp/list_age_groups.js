@@ -1,6 +1,6 @@
 
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -30,15 +30,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function listTournaments() {
-    try {
-        const querySnapshot = await getDocs(collection(db, "tournaments"));
-        querySnapshot.forEach((doc) => {
-            console.log(`${doc.id} => ${doc.data().name}`);
+async function listAgeGroups(id) {
+    const docRef = doc(db, "tournaments", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        console.log("BASE YEAR:", data.baseYear);
+        data.ageGroups.forEach(g => {
+            console.log(`ALIAS: ${g.alias}, ID: ${g.id}, sAge: ${g.sAge}, eAge: ${g.eAge}`);
         });
-    } catch (e) {
-        console.error(e);
+    } else {
+        console.log("No such tournament!");
     }
 }
 
-listTournaments();
+listAgeGroups("t-1774502487427");
