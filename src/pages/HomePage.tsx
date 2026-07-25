@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { generateNaverAuthUrl } from '@/services/auth/naverProvider';
+import { redirectToNaverLogin } from '@/services/auth/naverProvider';
 import './HomePage.css';
 
 export default function HomePage() {
@@ -8,9 +8,7 @@ export default function HomePage() {
   const handleNaverLogin = () => {
     setIsLoading(true);
     try {
-      // Generate secure OAuth URL and redirect
-      const url = generateNaverAuthUrl();
-      window.location.href = url;
+      redirectToNaverLogin();
     } catch (error) {
       console.error('Naver login failed to initiate:', error);
       setIsLoading(false);

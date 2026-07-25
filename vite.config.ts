@@ -7,7 +7,64 @@ import path from 'path'
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss()
+    tailwindcss(),
+    {
+      name: 'local-api-auth-profile-dev',
+      configureServer(server) {
+        // [Local Dev Support] Middleware for /api/auth/profile during `npm run dev` (dev.bat)
+        server.middlewares.use('/api/auth/profile', async (req, res) => {
+          if (req.method !== 'POST') {
+            res.statusCode = 405;
+            return res.end(JSON.stringify({ success: false, error: 'Method Not Allowed' }));
+          }
+
+          let body = '';
+          req.on('data', chunk => { body += chunk.toString(); });
+          req.on('end', async () => {
+            try {
+              const { accessToken } = JSON.parse(body);
+              if (!accessToken) {
+                res.statusCode = 400;
+                return res.end(JSON.stringify({ success: false, error: 'Access token is required' }));
+              }
+
+              // Fetch user profile from Naver server-side (Node.js) to avoid CORS
+              const profileResponse = await fetch('https://openapi.naver.com/v1/nid/me', {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Accept': 'application/json'
+                }
+              });
+
+              const data = await profileResponse.json();
+              res.setHeader('Content-Type', 'application/json');
+
+              if (!profileResponse.ok || data.resultcode !== '00') {
+                res.statusCode = profileResponse.status;
+                return res.end(JSON.stringify({
+                  success: false,
+                  error: data.message || 'Failed to fetch Naver profile'
+                }));
+              }
+
+              res.end(JSON.stringify({
+                success: true,
+                profile: data
+              }));
+
+            } catch (error: any) {
+              console.error('[LOCAL_DEV_PROFILE_ERROR]', error);
+              res.statusCode = 500;
+              res.end(JSON.stringify({ 
+                success: false, 
+                error: 'Internal server error while fetching profile',
+                message: error.message 
+              }));
+            }
+          });
+        });
+      }
+    }
   ],
   resolve: {
     alias: {
@@ -17,20 +74,6 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
-    proxy: {
-      // 로컬에서 /api로 시작하는 호출을 처리 (Vercel dev 시뮬레이션 용)
-      '/api': {
-        target: 'http://localhost:3000', 
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api')
-      },
-      // 네이버 직접 호출용 프록시 (선택사항)
-      '/naver_api': {
-        target: 'https://nid.naver.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/naver_api/, '')
-      }
-    }
   },
   build: {
     outDir: 'dist',

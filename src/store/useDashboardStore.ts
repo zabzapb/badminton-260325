@@ -162,18 +162,38 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         })))
         .sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
 
-      // Sort
+      // Sort: 참가 신청대회 > 참가 모집 중인 대회 > 종료된 대회 (날짜 순 정렬)
+      const getPriority = (t: any) => {
+        const now = new Date();
+        const lastDateStr = t.eventDates?.length > 0 ? t.eventDates[t.eventDates.length - 1] : t.eventDate;
+        const tEndDate = lastDateStr ? new Date(lastDateStr + "T23:59:59") : null;
+        const isFinished = (tEndDate && now > tEndDate) || t.status === "finished";
+
+        if (isFinished) return 3; // 종료된 대회
+        if (t.isJoined) return 1; // 참가 신청대회
+        return 2;                 // 참가 모집 중인 대회
+      };
+
       const sorted = enrichedTournaments.sort((a, b) => {
-        if (a.isJoined && !b.isJoined) return -1;
-        if (!a.isJoined && b.isJoined) return 1;
-        if (a.isJoined && b.isJoined) {
-          const dateA = a.eventDates?.[0] || a.eventDate || "9999-99-99";
-          const dateB = b.eventDates?.[0] || b.eventDate || "9999-99-99";
-          return dateA.localeCompare(dateB);
+        const prioA = getPriority(a);
+        const prioB = getPriority(b);
+
+        if (prioA !== prioB) {
+          return prioA - prioB;
         }
-        const deadA = a.deadline || "9999-99-99";
-        const deadB = b.deadline || "9999-99-99";
-        return deadA.localeCompare(deadB);
+
+        const dateA = a.eventDates?.[0] || a.eventDate || "9999-99-99";
+        const dateB = b.eventDates?.[0] || b.eventDate || "9999-99-99";
+
+        // 3순위 (종료된 대회 그룹): 참가 여부 우선 후, 오늘과 가장 가까운 날짜 순 (최근 종료일 우선: 내림차순)
+        if (prioA === 3) {
+          if (a.isJoined && !b.isJoined) return -1;
+          if (!a.isJoined && b.isJoined) return 1;
+          return dateB.localeCompare(dateA);
+        }
+
+        // 1, 2순위 (예정/모집 중 그룹): 다가오는 날짜 순 (오름차순)
+        return dateA.localeCompare(dateB);
       });
 
       set({ tournaments: sorted, notifications: notifs, invitations: allInvitations, loading: false });

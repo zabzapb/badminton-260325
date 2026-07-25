@@ -157,7 +157,7 @@ export function TournamentPlayerCard({
                         /* 신청 전: D-Day & 마감일 / 접수마감 / 대회종료 */
                         <div className="status-open-group">
                             {status === "finished" ? (
-                                <span style={{ fontSize: '16px', fontWeight: '900', color: 'rgba(0,0,0,0.4)' }}>대회 종료</span>
+                                <span style={{ fontSize: '14px', fontWeight: '400', color: 'rgba(0,0,0,0.4)' }}>종료</span>
                             ) : status === "closed" ? (
                                 <span style={{ fontSize: '16px', fontWeight: '900', color: 'rgba(0,0,0,0.4)' }}>접수 마감</span>
                             ) : (

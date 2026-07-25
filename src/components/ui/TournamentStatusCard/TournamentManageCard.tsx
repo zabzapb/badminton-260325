@@ -94,6 +94,7 @@ export function TournamentManageCard({
                                 </div>
                             )}
                             {status === "closed" && <span className="label-closed" style={{ fontSize: '15px', fontWeight: 700 }}>마감</span>}
+                            {status === "finished" && <span className="label-finished" style={{ fontSize: '14px', fontWeight: 400, color: 'rgba(0,0,0,0.4)' }}>종료</span>}
                             {status === "registered" && <span className="label-registered" style={{ fontSize: '15px', fontWeight: 700 }}>접수 중</span>}
                         </div>
                     </div>

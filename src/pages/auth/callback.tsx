@@ -1,20 +1,19 @@
 /**
  * Naver Login Callback Page
- * Receives the auth code, verifies CSRF state, and finalizes the login process.
+ * Extracts access_token directly from URL hash (Implicit Grant)
+ * Fetches Naver User Profile via /api/auth/profile and finalizes login.
  */
 
-import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { verifyOauthState } from '@/services/auth/naverProvider';
+import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { fetchNaverProfile } from '@/lib/api/authApi';
 import { normalizeNaverUser } from '@/services/auth/naverTransformer';
 import { finalizeLogin } from '@/services/auth/authService';
-import { exchangeNaverToken, fetchNaverProfile } from '@/lib/api/authApi';
 import { UserProfile } from '@/lib/types';
 import './callback.css';
 
 export default function NaverAuthCallback() {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
     const [status, setStatus] = useState<'loading' | 'error'>('loading');
     const hasProcessed = useRef(false);
 
@@ -31,56 +30,46 @@ export default function NaverAuthCallback() {
             if (hasProcessed.current) return;
             hasProcessed.current = true;
 
-            const code = searchParams.get('code');
-            const state = searchParams.get('state') || '';
-            const error = searchParams.get('error');
-
-            if (error || !code) {
-                setStatus('error');
-                clearTimeout(safetyTimeout);
-                return;
-            }
-
             try {
-                // 1. Verify CSRF
-                // 1. Verify CSRF
-                if (!verifyOauthState(state)) {
+                // Parse access_token from URL hash (#access_token=...)
+                const hash = window.location.hash.startsWith('#')
+                    ? window.location.hash.substring(1)
+                    : window.location.hash;
+
+                const searchParams = new URLSearchParams(hash);
+                const accessToken = searchParams.get('access_token');
+                const error = searchParams.get('error');
+
+                if (error || !accessToken) {
+                    console.error('No access token found in URL hash or OAuth error returned', { error, hash });
                     setStatus('error');
                     clearTimeout(safetyTimeout);
                     return;
                 }
 
-                // 2. Exchange token
-                // 2. Exchange token
-                const accessToken = await exchangeNaverToken(code, state);
+                // Fetch user profile via local dev middleware or Vercel serverless
                 const naverProfileData = await fetchNaverProfile(accessToken);
-
-                // 3. Sync
-                // 3. Sync
                 const normalized = normalizeNaverUser(naverProfileData);
                 const { success, isNewUser } = await finalizeLogin(normalized as UserProfile);
 
                 if (success) {
                     clearTimeout(safetyTimeout);
-                    
-                    // Proceed immediately for maximum speed as requested
-                    if (isNewUser) {
-                        navigate('/register', { replace: true });
-                    } else {
-                        navigate('/dashboard', { replace: true });
-                    }
+                    navigate(isNewUser ? '/register' : '/dashboard', { replace: true });
                 } else {
+                    console.error('Login finalization failed');
                     setStatus('error');
+                    clearTimeout(safetyTimeout);
                 }
             } catch (err) {
-                console.error('Login error:', err);
+                console.error('Login processing error:', err);
                 setStatus('error');
+                clearTimeout(safetyTimeout);
             }
         };
 
         processAuth();
         return () => clearTimeout(safetyTimeout);
-    }, [searchParams, navigate]);
+    }, [navigate, status]);
 
     return (
         <div className="callback-page">

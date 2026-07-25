@@ -1,41 +1,29 @@
 /**
- * Naver OAuth 2.0 Provider
- * Authentication URL generation and CSRF protection.
+ * Naver OAuth Provider (Implicit Grant Direct Flow)
+ * Client redirects to Naver OAuth authorization endpoint with response_type=token.
+ * No client_secret required, zero code-exchange delay.
  */
 
-import { NAVER_CONFIG } from '@/config/auth.config';
+const NAVER_CLIENT_ID = import.meta.env.VITE_NAVER_CLIENT_ID || 'Kk3SMMsp_T3X6GoLmS7O';
 
-/**
- * Generates and stores a unique CSRF state token.
- */
-function generateState(): string {
+function getCallbackUrl(): string {
+  const path = import.meta.env.VITE_NAVER_CALLBACK_PATH || '/auth/naver/callback';
+  return `${window.location.origin}${path}`;
+}
+
+function generateCsrfState(): string {
   const array = new Uint32Array(2);
   window.crypto.getRandomValues(array);
   return array.join('-');
 }
 
 /**
- * Generates the full Naver Authentication URL.
+ * Redirects browser to Naver OAuth 2.0 Authorization Endpoint.
+ * Uses response_type=token (Implicit Grant).
  */
-export function generateNaverAuthUrl(): string {
-  const state = generateState();
-  sessionStorage.setItem('hctc_naver_oauth_state', state);
-
-  const params = new URLSearchParams({
-    response_type: 'code',
-    client_id: NAVER_CONFIG.clientId || '',
-    redirect_uri: NAVER_CONFIG.getCallbackUrl(),
-    state: state,
-  });
-
-  return `${NAVER_CONFIG.endpoints.authorize}?${params.toString()}`;
-}
-
-/**
- * Verifies the state parameter returned by Naver.
- */
-export function verifyOauthState(returnedState: string): boolean {
-  const savedState = sessionStorage.getItem('hctc_naver_oauth_state');
-  sessionStorage.removeItem('hctc_naver_oauth_state'); 
-  return savedState !== null && savedState === returnedState;
+export function redirectToNaverLogin(): void {
+  const state = generateCsrfState();
+  const callbackUrl = encodeURIComponent(getCallbackUrl());
+  const authUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=token&client_id=${NAVER_CLIENT_ID}&redirect_uri=${callbackUrl}&state=${state}`;
+  window.location.href = authUrl;
 }

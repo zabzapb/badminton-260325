@@ -65,7 +65,7 @@ export function getTournamentTimeInfo(eventDateStr: string, deadlineStr?: string
             const diffTime = targetDate.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            ddayText = diffDays === 0 ? "D-Day" : diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
+            ddayText = diffDays === 0 ? "D-Day" : diffDays > 0 ? `D-${diffDays}` : "";
         } else {
             // Try fallback for ISO date or YYYY-MM-DD
             const d = new Date(eventDateStr);
@@ -74,7 +74,7 @@ export function getTournamentTimeInfo(eventDateStr: string, deadlineStr?: string
                 d.setHours(0, 0, 0, 0);
                 today.setHours(0, 0, 0, 0);
                 const diffDays = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                ddayText = diffDays === 0 ? "D-Day" : diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
+                ddayText = diffDays === 0 ? "D-Day" : diffDays > 0 ? `D-${diffDays}` : "";
             }
         }
     }
@@ -180,7 +180,7 @@ export function TournamentStatusCard({
                                 </div>
                             )}
                             {status === "closed" && <span className="label-closed">접수 마감</span>}
-                            {status === "finished" && <span className="label-finished">대회 종료</span>}
+                            {status === "finished" && <span className="label-finished" style={{ fontSize: '14px', fontWeight: 400 }}>종료</span>}
                             {status === "registered" && playerImages.length === 0 && <span className="label-registered">신청 완료</span>}
                         </div>
                     )}

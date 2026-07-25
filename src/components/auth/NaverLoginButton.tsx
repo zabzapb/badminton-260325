@@ -1,5 +1,5 @@
 import React from 'react';
-import { generateNaverAuthUrl } from '@/services/auth/naverProvider';
+import { redirectToNaverLogin } from '@/services/auth/naverProvider';
 import './NaverLoginButton.css';
 
 interface NaverLoginButtonProps {
@@ -25,9 +25,8 @@ export const NaverLoginButton: React.FC<NaverLoginButtonProps> = ({
         try {
             if (onLoginStart) onLoginStart();
             
-            // Generate OAuth URL and redirect
-            const url = generateNaverAuthUrl();
-            window.location.href = url;
+            // SDK Implicit Grant redirect (no server proxy needed)
+            redirectToNaverLogin();
         } catch (err) {
             console.error('Naver login initiation failed:', err);
             if (onError) onError(err as Error);
