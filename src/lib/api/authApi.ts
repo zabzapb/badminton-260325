@@ -50,9 +50,74 @@ export async function exchangeNaverToken(code: string, state: string): Promise<s
 /**
  * [Vercel Serverless] Fetches User Profile through our own API Proxy to avoid CORS.
  */
+/**
+ * Naver Official JS SDK Profile Extraction
+ */
+export async function getNaverProfileFromSDK(): Promise<any> {
+    return new Promise((resolve, reject) => {
+        if (!(window as any).naver?.LoginWithNaverId) {
+            reject(new Error('SDK_NOT_AVAILABLE'));
+            return;
+        }
+        try {
+            const naverLogin = new (window as any).naver.LoginWithNaverId({
+                clientId: import.meta.env.VITE_NAVER_CLIENT_ID || 'Kk3SMMsp_T3X6GoLmS7O',
+                callbackUrl: window.location.href.split('#')[0],
+                isPopup: false,
+                callbackHandle: true
+            });
+            naverLogin.init();
+            naverLogin.getLoginStatus((status: boolean) => {
+                if (status && naverLogin.user) {
+                    const u = naverLogin.user;
+                    const rawProfile = u._profile || {};
+                    const id = (typeof u.getId === 'function' ? u.getId() : u.id) || rawProfile.id;
+                    const name = (typeof u.getName === 'function' ? u.getName() : u.name) || rawProfile.name || rawProfile.nickname;
+                    const mobile = (typeof u.getMobile === 'function' ? u.getMobile() : (u.mobile || u.phone)) || rawProfile.mobile;
+                    const gender = (typeof u.getGender === 'function' ? u.getGender() : u.gender) || rawProfile.gender;
+                    const birthyear = (typeof u.getBirthyear === 'function' ? u.getBirthyear() : u.birthyear) || rawProfile.birthyear;
+                    const profile_image = (typeof u.getProfileImage === 'function' ? u.getProfileImage() : u.profile_image) || rawProfile.profile_image;
+
+                    if (id) {
+                        resolve({
+                            response: {
+                                id,
+                                name,
+                                nickname: u.nickname || rawProfile.nickname || name,
+                                mobile,
+                                gender,
+                                birthyear,
+                                profile_image
+                            }
+                        });
+                        return;
+                    }
+                }
+                reject(new Error('SDK_LOGIN_STATUS_FALSE'));
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+/**
+ * [Hybrid Fallback Engine] Fetches User Profile using SDK, Direct API, CORS proxies, and local API.
+ */
 export async function fetchNaverProfile(accessToken: string): Promise<any> {
     authLogger.log('AUTH_NAVER_PROXY_PROFILE_START', { accessToken: '***' });
     
+    // Method 0: Naver Official JS SDK (Bypasses CORS completely via SDK postMessage/iframe)
+    try {
+        const sdkData = await getNaverProfileFromSDK();
+        if (sdkData?.response) {
+            authLogger.log('AUTH_NAVER_PROFILE_SDK_SUCCESS', { data: sdkData });
+            return sdkData;
+        }
+    } catch (e) {
+        console.warn('Naver SDK profile extraction skipped or failed, trying OpenAPI/proxies...', e);
+    }
+
     // 1. Direct fetch to Naver OpenAPI
     try {
         const directRes = await fetch('https://openapi.naver.com/v1/nid/me', {

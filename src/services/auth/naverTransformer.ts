@@ -29,25 +29,17 @@ export function normalizeNaverUser(naverData: any): Partial<UserProfile> {
   
   // [Strict Validation] Ensure atomic level identity data is present
   if (!profile || !profile.id) {
-    throw new Error('ERR_AUTH_NAVER_INCOMPLETE_PROFILE');
+    throw new Error(`ERR_AUTH_NAVER_INCOMPLETE_PROFILE: ${JSON.stringify(naverData || {})}`);
   }
 
-  // Mandatory fields for HCTC Player identity
-  if (!profile.name && !profile.nickname) {
-    throw new Error('ERR_AUTH_NAVER_MISSING_NAME');
-  }
-  
-  if (!profile.mobile) {
-    throw new Error('ERR_AUTH_NAVER_MISSING_PHONE');
-  }
-
-  // Phone normalization: Removes hyphens, ensures numeric consistency.
-  const normalizedPhone = (profile.mobile || '').replace(/[^0-9]/g, '');
+  // Fallback for name & phone to prevent auth hard-block
+  const realName = profile.name || profile.nickname || '네이버사용자';
+  const normalizedPhone = (profile.mobile || profile.phone || '').replace(/[^0-9]/g, '');
 
   return {
     id: profile.id,
-    realName: profile.name || profile.nickname || 'Unknown',
-    nickname: profile.nickname,
+    realName: realName,
+    nickname: profile.nickname || realName,
     gender: (profile.gender?.toUpperCase() === 'F' || profile.gender?.toUpperCase() === 'W') ? 'F' : 'M',
     phone: normalizedPhone,
     birthYear: profile.birthyear ? parseInt(profile.birthyear, 10) : undefined,

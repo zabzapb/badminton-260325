@@ -15,6 +15,7 @@ import './callback.css';
 export default function NaverAuthCallback() {
     const navigate = useNavigate();
     const [status, setStatus] = useState<'loading' | 'error'>('loading');
+    const [errorDetail, setErrorDetail] = useState<string>('');
     const hasProcessed = useRef(false);
 
     useEffect(() => {
@@ -22,6 +23,7 @@ export default function NaverAuthCallback() {
         const safetyTimeout = setTimeout(() => {
             if (status === 'loading') {
                 console.error('Authentication process timed out (10s)');
+                setErrorDetail('인증 처리 시간이 초과되었습니다. (10초 타임아웃)');
                 setStatus('error');
             }
         }, 10000);
@@ -41,7 +43,9 @@ export default function NaverAuthCallback() {
                 const error = searchParams.get('error');
 
                 if (error || !accessToken) {
-                    console.error('No access token found in URL hash or OAuth error returned', { error, hash });
+                    const msg = `URL 토큰 오류: ${error || 'access_token이 존재하지 않음'}`;
+                    console.error(msg, { hash });
+                    setErrorDetail(msg);
                     setStatus('error');
                     clearTimeout(safetyTimeout);
                     return;
@@ -57,11 +61,14 @@ export default function NaverAuthCallback() {
                     navigate(isNewUser ? '/register' : '/dashboard', { replace: true });
                 } else {
                     console.error('Login finalization failed');
+                    setErrorDetail('로그인 정보 저장 중 실패가 발생했습니다.');
                     setStatus('error');
                     clearTimeout(safetyTimeout);
                 }
-            } catch (err) {
+            } catch (err: any) {
+                const errMsg = err?.message || String(err);
                 console.error('Login processing error:', err);
+                setErrorDetail(errMsg);
                 setStatus('error');
                 clearTimeout(safetyTimeout);
             }
@@ -87,6 +94,11 @@ export default function NaverAuthCallback() {
                     <div className="error-icon">⚠️</div>
                     <h2 className="callback-status">로그인 실패</h2>
                     <p className="callback-hint">네이버 인증 서버와 통신 중 오류가 발생했습니다.</p>
+                    {errorDetail && (
+                        <p style={{ color: '#FF6B3D', fontSize: '12px', wordBreak: 'break-all', margin: '8px 0', opacity: 0.8 }}>
+                            ({errorDetail})
+                        </p>
+                    )}
                     <p className="callback-hint-minor">
                         잠시 후 다시 시도하시거나 관리자에게 문의바랍니다.
                     </p>
