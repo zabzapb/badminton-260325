@@ -51,28 +51,75 @@ export async function exchangeNaverToken(code: string, state: string): Promise<s
  * [Vercel Serverless] Fetches User Profile through our own API Proxy to avoid CORS.
  */
 export async function fetchNaverProfile(accessToken: string): Promise<any> {
-    // 인자를 2개로 맞춰줌 (로그이름, 객체) - 트레이싱 가시성 확보
     authLogger.log('AUTH_NAVER_PROXY_PROFILE_START', { accessToken: '***' });
     
+    // 1. Direct fetch to Naver OpenAPI
+    try {
+        const directRes = await fetch('https://openapi.naver.com/v1/nid/me', {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        if (directRes.ok) {
+            const data = await directRes.json();
+            if (data?.response) {
+                authLogger.log('AUTH_NAVER_PROFILE_DIRECT_SUCCESS', { data });
+                return data;
+            }
+        }
+    } catch (e) {
+        console.warn('Direct Naver profile fetch failed or CORS blocked, trying CORS proxy...', e);
+    }
+
+    // 2. CORS Proxy 1: corsproxy.io
+    try {
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent('https://openapi.naver.com/v1/nid/me')}`;
+        const proxyRes = await fetch(proxyUrl, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        if (proxyRes.ok) {
+            const data = await proxyRes.json();
+            if (data?.response) {
+                authLogger.log('AUTH_NAVER_PROFILE_PROXY_SUCCESS', { data });
+                return data;
+            }
+        }
+    } catch (e) {
+        console.warn('corsproxy.io failed, trying backup proxy...', e);
+    }
+
+    // 3. CORS Proxy 2: allorigins
+    try {
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://openapi.naver.com/v1/nid/me')}`;
+        const proxyRes = await fetch(proxyUrl, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        if (proxyRes.ok) {
+            const data = await proxyRes.json();
+            if (data?.response) {
+                authLogger.log('AUTH_NAVER_PROFILE_ALLORIGINS_SUCCESS', { data });
+                return data;
+            }
+        }
+    } catch (e) {
+        console.warn('Backup CORS proxy failed, trying local API...', e);
+    }
+
+    // 4. Serverless API fallback (if serverless endpoint exists)
     try {
         const response = await fetch('/api/auth/profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ accessToken })
         });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || 'ERR_PROXY_PROFILE_FAILED');
+        if (response.ok) {
+            const data = await response.json();
+            if (data?.success) return data;
         }
-
-        // 성공 로그로 변경하고 데이터를 전달하여 디버깅 용이성 확보
-        authLogger.log('AUTH_NAVER_PROFILE_PROXY_SUCCESS', { data });
-        
-        return data.profile;
     } catch (err: any) {
         authLogger.log('AUTH_NAVER_PROFILE_PROXY_ERROR', { error: err.message });
-        throw err;
     }
+
+    throw new Error('ERR_PROXY_PROFILE_FAILED');
 }

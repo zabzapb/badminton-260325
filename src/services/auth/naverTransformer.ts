@@ -24,8 +24,8 @@ export interface NaverResponseData {
 /**
  * Normalizes a raw Naver profile into a Player (UserProfile) object.
  */
-export function normalizeNaverUser(naverData: NaverResponseData): Partial<UserProfile> {
-  const { response: profile } = naverData;
+export function normalizeNaverUser(naverData: any): Partial<UserProfile> {
+  const profile = naverData?.response || naverData;
   
   // [Strict Validation] Ensure atomic level identity data is present
   if (!profile || !profile.id) {
