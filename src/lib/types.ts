@@ -85,6 +85,12 @@ export interface Tournament {
   ageGroups?: any[];
   categoryMatrix?: Record<string, string[]>;
   confirmedSegments?: any[];
+  poster?: string | null;
+  posterName?: string | null;
+  guideline?: string | null;
+  guidelineName?: string | null;
+  tshirtImage?: string | null;
+  tshirtImageName?: string | null;
   files?: any[];
   managerId?: string;
   createdAt: string;

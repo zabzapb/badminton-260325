@@ -56,10 +56,23 @@ export function TournamentListView({ tournaments, onAddTournament, onEditTournam
                             displayDate = `${start} - ${end}`;
                         }
                     }
+
+                    const lastDateStr = t.eventDates?.length > 0 ? t.eventDates[t.eventDates.length - 1] : t.eventDate;
+                    const tEndDate = lastDateStr ? new Date(lastDateStr + "T23:59:59") : null;
+                    const tDeadline = t.deadline ? new Date(t.deadline + "T23:59:59") : null;
+
+                    let calcStatus = t.status || "open";
+                    if (tEndDate && now > tEndDate) {
+                        calcStatus = "finished";
+                    } else if (tDeadline && now > tDeadline) {
+                        calcStatus = "closed";
+                    }
+
                     return (
                         <TournamentManageCard 
                             key={t.id} 
                             {...t} 
+                            status={calcStatus as any}
                             eventDate={displayDate} 
                             className="card-bw" 
                             onClick={() => onEditTournament(t.id)} 

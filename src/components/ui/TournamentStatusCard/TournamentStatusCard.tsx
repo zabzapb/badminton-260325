@@ -85,9 +85,9 @@ export function getTournamentTimeInfo(eventDateStr: string, deadlineStr?: string
         const dDate = new Date(deadlineStr);
         const month = (dDate.getMonth() + 1).toString().padStart(2, '0');
         const day = dDate.getDate().toString().padStart(2, '0');
-        deadlineText = `마감 ${month}.${day}.`;
+        deadlineText = `접수마감 ${month}.${day}.`;
     } else {
-        deadlineText = "마감 미정";
+        deadlineText = "접수마감 미정";
     }
 
     return {

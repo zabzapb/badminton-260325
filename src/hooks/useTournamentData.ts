@@ -39,7 +39,6 @@ export const useTournamentData = () => {
             const fbTournaments = await getAllTournaments();
             const enrichedTournaments = await Promise.all(fbTournaments.map(async (t: any) => {
                 const rawApps: any[] = await getApplicationsByTournament(t.id);
-                // [통합 통계 유틸 사용]
                 const stats = calculateTournamentStats(rawApps);
                 return { ...t, ...stats };
             }));
@@ -63,20 +62,18 @@ export const useTournamentData = () => {
         }
     }, []);
 
-    // 4. 대회 정보 저장 로직
+    // 4. 대회 정보 저장 로직 (파일 업로드 포함)
     const saveTournamentData = async (formData: TournamentFormData) => {
         console.log("Saving tournament started...", formData);
         try {
             const tournamentId = formData.id || `t-${Date.now()}`;
-            // [임시 비활성화] 파일 업로드 기능
-            /*
-            let posterUrl = typeof formData.poster === 'string' ? formData.poster : "";
-            let guidelineUrl = typeof formData.guideline === 'string' ? formData.guideline : "";
-
+            
+            // 포스터 이미지 업로드 처리
+            let posterUrl: string | null = typeof formData.poster === 'string' ? formData.poster : null;
             if (formData.poster instanceof File) {
                 console.log("Uploading poster file...", formData.poster.name);
-                const extension = formData.poster.name.split('.').pop();
-                const path = `tournaments/posters/${tournamentId}.${extension}`;
+                const ext = formData.poster.name.split('.').pop() || 'jpg';
+                const path = `tournaments/posters/${tournamentId}_${Date.now()}.${ext}`;
                 const uploaded = await uploadFile(path, formData.poster);
                 if (uploaded) {
                     console.log("Poster upload success:", uploaded);
@@ -86,10 +83,12 @@ export const useTournamentData = () => {
                 }
             }
 
+            // 대회 요강 문서 업로드 처리
+            let guidelineUrl: string | null = typeof formData.guideline === 'string' ? formData.guideline : null;
             if (formData.guideline instanceof File) {
                 console.log("Uploading guideline file...", formData.guideline.name);
-                const extension = formData.guideline.name.split('.').pop();
-                const path = `tournaments/guidelines/${tournamentId}.${extension}`;
+                const ext = formData.guideline.name.split('.').pop() || 'pdf';
+                const path = `tournaments/guidelines/${tournamentId}_${Date.now()}.${ext}`;
                 const uploaded = await uploadFile(path, formData.guideline);
                 if (uploaded) {
                     console.log("Guideline upload success:", uploaded);
@@ -98,7 +97,21 @@ export const useTournamentData = () => {
                     console.warn("Guideline upload failed (returned null)");
                 }
             }
-            */
+
+            // 참가기념 티셔츠 사이즈 이미지 업로드 처리
+            let tshirtImageUrl: string | null = typeof formData.tshirtImage === 'string' ? formData.tshirtImage : null;
+            if (formData.tshirtImage instanceof File) {
+                console.log("Uploading tshirt image file...", formData.tshirtImage.name);
+                const ext = formData.tshirtImage.name.split('.').pop() || 'jpg';
+                const path = `tournaments/tshirts/${tournamentId}_${Date.now()}.${ext}`;
+                const uploaded = await uploadFile(path, formData.tshirtImage);
+                if (uploaded) {
+                    console.log("Tshirt image upload success:", uploaded);
+                    tshirtImageUrl = uploaded;
+                } else {
+                    console.warn("Tshirt image upload failed (returned null)");
+                }
+            }
 
             const categoryMap: Record<string, string[]> = {};
             (formData.confirmedSegments || []).forEach(seg => {
@@ -113,10 +126,14 @@ export const useTournamentData = () => {
             });
             const categories = Object.keys(categoryMap).map(type => ({ type, groups: categoryMap[type] }));
             
-            // File 객체가 포함된 original formData를 spread 하기 전에 poster/guideline 값을 URL로 치유
             const submissionData = { ...formData };
             if (submissionData.poster instanceof File) delete (submissionData as any).poster;
             if (submissionData.guideline instanceof File) delete (submissionData as any).guideline;
+            if (submissionData.tshirtImage instanceof File) delete (submissionData as any).tshirtImage;
+
+            let posterName: string | null = formData.posterName || (formData.poster instanceof File ? formData.poster.name : null);
+            let guidelineName: string | null = formData.guidelineName || (formData.guideline instanceof File ? formData.guideline.name : null);
+            let tshirtImageName: string | null = formData.tshirtImageName || (formData.tshirtImage instanceof File ? formData.tshirtImage.name : null);
 
             const tournamentData = {
                 ...submissionData,
@@ -125,14 +142,17 @@ export const useTournamentData = () => {
                 status: (formData as any).status || "open",
                 updatedAt: new Date().toISOString(),
                 createdAt: (formData as any).createdAt || new Date().toISOString(),
-                poster: (formData.poster && typeof formData.poster === 'string' ? formData.poster : null),
-                guideline: (formData.guideline && typeof formData.guideline === 'string' ? formData.guideline : null),
+                poster: posterUrl,
+                posterName: posterName,
+                guideline: guidelineUrl,
+                guidelineName: guidelineName,
+                tshirtImage: tshirtImageUrl,
+                tshirtImageName: tshirtImageName,
             };
 
             console.log("Sanitizing data for Firestore...", tournamentData);
-            // JSON 직렬화 안정성 확보
             const jsonString = JSON.stringify(tournamentData, (key, value) => {
-                if (value instanceof File) return undefined; // 실수로 남은 File 객체 제거
+                if (value instanceof File) return undefined;
                 return value;
             });
             const cleanData = JSON.parse(jsonString);
@@ -158,7 +178,7 @@ export const useTournamentData = () => {
         try {
             const result = await deleteTournament(id);
             if (result.success) {
-                await loadTournaments(); // 삭제 성공 시 목록 새로고침
+                await loadTournaments();
                 return { success: true };
             }
             return { success: false, error: "삭제 중 오류가 발생했습니다." };

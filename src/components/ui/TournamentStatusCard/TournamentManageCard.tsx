@@ -45,43 +45,44 @@ export function TournamentManageCard({
     sCount = 0,
 }: TournamentManageCardProps) {
     const { dday, deadline: formattedDeadline } = getTournamentTimeInfo(eventDate, deadline);
+    const isFinished = status === "finished";
 
     return (
         <article
-            className={`tournament-status-card tournament-status-card--manage ${className}`}
+            className={`tournament-status-card tournament-status-card--manage ${isFinished ? 'is-finished' : ''} ${className}`}
             style={bgColor ? { backgroundColor: bgColor } : {}}
             onClick={onClick}
         >
             <div className="tournament-status-card__content" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
-                <h3 className="tournament-status-card__name" style={{ width: '100%', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '8px' }}>{name}</h3>
+                <h3 className="tournament-status-card__name" style={{ width: '100%', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '8px', color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{name}</h3>
                 <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div className="tournament-status-card__info-group" style={{ gap: '6px' }}>
                         <div className="tournament-status-card__sub-info" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px', marginTop: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span className="info-date" style={{ color: 'rgba(0,0,0,0.8)', fontSize: '15px' }}>{eventDate}</span>
-                                <span className="info-deadline" style={{ fontSize: '14px', fontWeight: '800', color: '#000' }}>{formattedDeadline}</span>
+                                <span className="info-date" style={{ color: isFinished ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.8)', fontSize: '15px' }}>{eventDate}</span>
+                                <span className="info-deadline" style={{ fontSize: '14px', fontWeight: '800', color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{formattedDeadline}</span>
                             </div>
-                            <span className="info-venue" style={{ fontSize: '13px', color: 'rgba(0,0,0,0.6)' }}>{venue}</span>
+                            <span className="info-venue" style={{ fontSize: '13px', color: isFinished ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.6)' }}>{venue}</span>
                         </div>
                         <div className="tournament-status-card__stats" style={{ marginTop: '12px', fontSize: '13px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 12px' }}>
                             <div style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <span style={{ color: 'rgba(0,0,0,0.5)', fontWeight: 400 }}>Total</span>
-                                <strong style={{ fontWeight: 800, fontSize: '14px', color: '#000' }}>{totalTeams}</strong>
-                                <span style={{ color: 'rgba(0,0,0,0.45)', fontWeight: 400 }}>team</span>
-                                <span style={{ color: 'rgba(0,0,0,0.45)', fontWeight: 400 }}>
-                                    (<strong style={{ fontWeight: 800, color: '#000' }}>{totalPlayers}</strong>명)
+                                <span style={{ color: isFinished ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.5)', fontWeight: 400 }}>Total</span>
+                                <strong style={{ fontWeight: 800, fontSize: '14px', color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{totalTeams}</strong>
+                                <span style={{ color: isFinished ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.45)', fontWeight: 400 }}>team</span>
+                                <span style={{ color: isFinished ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.45)', fontWeight: 400 }}>
+                                    (<strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{totalPlayers}</strong>명)
                                 </span>
                                 <span style={{ opacity: 0.2, margin: '0 0 0 8px' }}>|</span>
                             </div>
                             
-                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 10px', color: 'rgba(0,0,0,0.45)' }}>
-                                <div style={{ whiteSpace: 'nowrap' }}>MD <strong style={{ fontWeight: 800, color: '#000' }}>{mdCount}</strong></div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 10px', color: isFinished ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.45)' }}>
+                                <div style={{ whiteSpace: 'nowrap' }}>MD <strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{mdCount}</strong></div>
                                 <span style={{ opacity: 0.15 }}>|</span>
-                                <div style={{ whiteSpace: 'nowrap' }}>WD <strong style={{ fontWeight: 800, color: '#000' }}>{wdCount}</strong></div>
+                                <div style={{ whiteSpace: 'nowrap' }}>WD <strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{wdCount}</strong></div>
                                 <span style={{ opacity: 0.15 }}>|</span>
-                                <div style={{ whiteSpace: 'nowrap' }}>XD <strong style={{ fontWeight: 800, color: '#000' }}>{xdCount}</strong></div>
+                                <div style={{ whiteSpace: 'nowrap' }}>XD <strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{xdCount}</strong></div>
                                 <span style={{ opacity: 0.15 }}>|</span>
-                                <div style={{ whiteSpace: 'nowrap' }}>S <strong style={{ fontWeight: 800, color: '#000' }}>{sCount}</strong></div>
+                                <div style={{ whiteSpace: 'nowrap' }}>S <strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{sCount}</strong></div>
                             </div>
                         </div>
                     </div>

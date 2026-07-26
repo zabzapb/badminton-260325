@@ -59,28 +59,29 @@ export function TournamentPlayerCard({
     className = "",
 }: TournamentPlayerCardProps) {
     const { dday, deadline: formattedDeadline } = getTournamentTimeInfo(eventDate, deadline);
+    const isFinished = status === "finished";
 
     return (
         <article
-            className={`tournament-status-card tournament-status-card--player ${isJoined ? 'is-joined' : ''} ${isPartner ? 'is-partner-view' : ''} ${className}`}
+            className={`tournament-status-card tournament-status-card--player ${isJoined ? 'is-joined' : ''} ${isPartner ? 'is-partner-view' : ''} ${isFinished ? 'is-finished' : ''} ${className}`}
             style={bgColor ? { backgroundColor: bgColor, border: "none" } : {}}
             onClick={onClick}
         >
             <div className="tournament-status-card__content">
                 <div className="tournament-status-card__info-group">
-                    <h3 className="tournament-status-card__name">{name}</h3>
-                    <div className="tournament-status-card__sub-info">
+                    <h3 className="tournament-status-card__name" style={{ color: isFinished ? 'rgba(0,0,0,0.45)' : '#1C1C1E' }}>{name}</h3>
+                    <div className="tournament-status-card__sub-info" style={{ color: isFinished ? 'rgba(0,0,0,0.4)' : undefined }}>
                         <span className="info-date">{eventDate}</span>
                         <span className="info-venue">{venue}</span>
                     </div>
 
                     <div className="tournament-status-card__entry-container" style={{ marginTop: '16px' }}>
                         {isJoined ? (
-                            <div style={{ fontSize: '18px', fontWeight: '900', color: '#000', lineHeight: '1.2' }}>
+                            <div style={{ fontSize: '18px', fontWeight: '900', color: isFinished ? 'rgba(0,0,0,0.5)' : '#000', lineHeight: '1.2' }}>
                                 {joinedEvents.map((ev: any, i) => (
                                     <span key={i} style={{ 
                                         marginRight: i < joinedEvents.length - 1 ? '12px' : 0,
-                                        color: ev.isPending ? '#8E8E93' : '#000',
+                                        color: isFinished ? 'rgba(0,0,0,0.5)' : (ev.isPending ? '#8E8E93' : '#000'),
                                         fontSize: ev.isPending ? '16px' : '18px'
                                     }}>
                                         {ev.type} {ev.ageGroup} {ev.level}
@@ -89,7 +90,7 @@ export function TournamentPlayerCard({
                                 ))}
 
                                 {isPartner && (
-                                    <span style={{ fontSize: '12px', color: '#666', fontWeight: '400', display: 'block', marginTop: '4px' }}>
+                                    <span style={{ fontSize: '12px', color: isFinished ? 'rgba(0,0,0,0.4)' : '#666', fontWeight: '400', display: 'block', marginTop: '4px' }}>
                                         (파트너로 초대됨)
                                     </span>
                                 )}
@@ -115,25 +116,25 @@ export function TournamentPlayerCard({
                             </button>
                         )}
 
-                        <div className="tournament-status-card__stats" style={{ marginTop: '12px', fontSize: '12px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 10px', color: 'rgba(0,0,0,0.5)' }}>
+                        <div className="tournament-status-card__stats" style={{ marginTop: '12px', fontSize: '12px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 10px', color: isFinished ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.5)' }}>
                             <div style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <span style={{ fontWeight: 400 }}>Total</span>
-                                <strong style={{ fontWeight: 800, color: '#000', fontSize: '13px' }}>{totalTeams}</strong>
-                                <span style={{ color: 'rgba(0,0,0,0.45)', fontWeight: 400 }}>team</span>
-                                <span style={{ color: 'rgba(0,0,0,0.45)', fontWeight: 400 }}>
-                                    (<strong style={{ fontWeight: 800, color: '#000' }}>{totalApplicants}</strong>명)
+                                <strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000', fontSize: '13px' }}>{totalTeams}</strong>
+                                <span style={{ color: isFinished ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.45)', fontWeight: 400 }}>team</span>
+                                <span style={{ color: isFinished ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.45)', fontWeight: 400 }}>
+                                    (<strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{totalApplicants}</strong>명)
                                 </span>
                                 <span style={{ opacity: 0.2, margin: '0 0 0 4px' }}>|</span>
                             </div>
                             
                             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 8px' }}>
-                                <div style={{ whiteSpace: 'nowrap' }}>MD <strong style={{ fontWeight: 800, color: '#000' }}>{teamStats.md}</strong></div>
+                                <div style={{ whiteSpace: 'nowrap' }}>MD <strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{teamStats.md}</strong></div>
                                 <span style={{ opacity: 0.15 }}>|</span>
-                                <div style={{ whiteSpace: 'nowrap' }}>WD <strong style={{ fontWeight: 800, color: '#000' }}>{teamStats.wd}</strong></div>
+                                <div style={{ whiteSpace: 'nowrap' }}>WD <strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{teamStats.wd}</strong></div>
                                 <span style={{ opacity: 0.15 }}>|</span>
-                                <div style={{ whiteSpace: 'nowrap' }}>XD <strong style={{ fontWeight: 800, color: '#000' }}>{teamStats.xd}</strong></div>
+                                <div style={{ whiteSpace: 'nowrap' }}>XD <strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{teamStats.xd}</strong></div>
                                 <span style={{ opacity: 0.15 }}>|</span>
-                                <div style={{ whiteSpace: 'nowrap' }}>S <strong style={{ fontWeight: 800, color: '#000' }}>{teamStats.s}</strong></div>
+                                <div style={{ whiteSpace: 'nowrap' }}>S <strong style={{ fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#000' }}>{teamStats.s}</strong></div>
                             </div>
                         </div>
                     </div>
@@ -141,10 +142,13 @@ export function TournamentPlayerCard({
 
                 <div className="tournament-status-card__side-action" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
                     {isJoined ? (
-                        /* 신청 후: 파트너 아바타 */
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+                        /* 신청 후: 종료 표기 및 파트너 아바타 */
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                            {isFinished && (
+                                <span style={{ fontSize: '13px', fontWeight: '400', color: 'rgba(0,0,0,0.4)' }}>종료</span>
+                            )}
                             {partnerImages.length > 0 && (
-                                <div className="player-avatars-overlap">
+                                <div className="player-avatars-overlap" style={{ opacity: isFinished ? 0.6 : 1 }}>
                                     {partnerImages.map((img, i) => (
                                         <div key={i} className="avatar-circle" style={{ zIndex: partnerImages.length - i }}>
                                             <img src={img || "/profile_sample.png"} alt="partner" />

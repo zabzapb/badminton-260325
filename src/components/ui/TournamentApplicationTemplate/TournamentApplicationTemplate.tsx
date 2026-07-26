@@ -295,6 +295,34 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
                             isPastDeadline={isPastDeadline}
                         />
                     )}
+
+                    {/* TOURNAMENT POSTER IMAGE DISPLAY AT BOTTOM */}
+                    {tournament.poster && typeof tournament.poster === 'string' && (tournament.poster.startsWith('http') || tournament.poster.startsWith('data:image')) && (
+                        <div className="tournament-poster-section" style={{ marginTop: '32px', textAlign: 'left' }}>
+                            <h4 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px', color: '#1C1C1E' }}>대회 포스터</h4>
+                            <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid #E5E5EA', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}>
+                                <img 
+                                    src={tournament.poster} 
+                                    alt={`${tournament.name} 포스터`} 
+                                    style={{ width: '100%', height: 'auto', display: 'block' }} 
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SOUVENIR T-SHIRT SIZE CHART DISPLAY AT BOTTOM */}
+                    {tournament.tshirtImage && typeof tournament.tshirtImage === 'string' && (tournament.tshirtImage.startsWith('http') || tournament.tshirtImage.startsWith('data:image')) && (
+                        <div className="tournament-tshirt-section" style={{ marginTop: '32px', textAlign: 'left' }}>
+                            <h4 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px', color: '#1C1C1E' }}>참가기념 티셔츠 사이즈</h4>
+                            <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid #E5E5EA', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}>
+                                <img 
+                                    src={tournament.tshirtImage} 
+                                    alt={`${tournament.name} 참가기념 티셔츠 사이즈`} 
+                                    style={{ width: '100%', height: 'auto', display: 'block' }} 
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <footer className="floating-footer" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '20px', background: 'linear-gradient(transparent, rgba(234, 228, 218, 0.9))', zIndex: 10 }}>

@@ -44,8 +44,12 @@ export interface TournamentFormData {
     ageGroups: AgeGroup[];
     categoryMatrix: Record<string, string[]>;
     confirmedSegments: MatrixSegment[];
-    poster?: File | string;
-    guideline?: File | string;
+    poster?: File | string | null;
+    posterName?: string | null;
+    guideline?: File | string | null;
+    guidelineName?: string | null;
+    tshirtImage?: File | string | null;
+    tshirtImageName?: string | null;
     modeSettings?: {
         normal?: AgeGroup[];
         ageInput?: AgeGroup[];

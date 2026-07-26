@@ -121,6 +121,75 @@ export const TournamentInfoBanner: React.FC<TournamentInfoBannerProps> = ({
                                 <Icon name="copy" size={14} color="#000" />
                             </button>
                         </div>
+                        {tournament.guideline && typeof tournament.guideline === 'string' && (tournament.guideline.startsWith('http') || tournament.guideline.startsWith('data:')) && (
+                            <div style={{ marginTop: '6px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const fileUrl = tournament.guideline;
+                                        if (!fileUrl) return;
+                                        const fileName = tournament.guidelineName || `${tournament.name}_대회요강`;
+
+                                        if (fileUrl.startsWith('data:')) {
+                                            try {
+                                                const parts = fileUrl.split(';base64,');
+                                                const contentType = parts[0].replace('data:', '') || 'application/octet-stream';
+                                                const base64Data = parts[1];
+                                                
+                                                if (base64Data) {
+                                                    const binaryStr = window.atob(base64Data);
+                                                    const len = binaryStr.length;
+                                                    const bytes = new Uint8Array(len);
+                                                    for (let i = 0; i < len; i++) {
+                                                        bytes[i] = binaryStr.charCodeAt(i);
+                                                    }
+                                                    const blob = new Blob([bytes], { type: contentType });
+                                                    const blobUrl = URL.createObjectURL(blob);
+                                                    
+                                                    const link = document.createElement('a');
+                                                    link.href = blobUrl;
+                                                    const ext = contentType.includes('pdf') ? 'pdf' : (contentType.includes('word') || contentType.includes('officedocument')) ? 'docx' : 'file';
+                                                    link.download = fileName.includes('.') ? fileName : `${fileName}.${ext}`;
+                                                    document.body.appendChild(link);
+                                                    link.click();
+                                                    document.body.removeChild(link);
+                                                    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+                                                    return;
+                                                }
+                                            } catch (err) {
+                                                console.error("Data URL download error:", err);
+                                            }
+                                        }
+
+                                        const link = document.createElement('a');
+                                        link.href = fileUrl;
+                                        link.target = '_blank';
+                                        link.download = fileName;
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    }}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        padding: '12px 24px',
+                                        borderRadius: '10px',
+                                        background: '#FF6B3D',
+                                        color: '#fff',
+                                        border: 'none',
+                                        fontSize: '15px',
+                                        fontWeight: '800',
+                                        cursor: 'pointer',
+                                        boxShadow: 'none'
+                                    }}
+                                >
+                                    <Icon name="document" size={16} color="#fff" />
+                                    <span>대회 요강 다운로드</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -191,23 +191,41 @@ export const TournamentOverviewSection: React.FC<props> = ({
                     {/* Poster Upload */}
                     <div 
                         className="inline-item" 
-                        style={{ height: '48px', cursor: 'pointer', position: 'relative' }}
+                        style={{ height: '48px', cursor: 'pointer', position: 'relative', justifyContent: 'space-between' }}
                     >
-                        <Icon name="gallery" size={18} color="#FF6B3D" />
-                        <span style={{ fontSize: '14px', color: (formData.poster) ? '#1C1C1E' : '#C7C7CC', fontWeight: formData.poster ? 700 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {formData.poster instanceof File 
-                                ? formData.poster.name 
-                                : (typeof formData.poster === 'string' && formData.poster.startsWith('http'))
-                                    ? "대회 포스터 이미지가 등록됨" 
-                                    : "대회 포스터 이미지 선택(JPG, PNG)"}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, overflow: 'hidden' }}>
+                            <Icon name="gallery" size={18} color="#FF6B3D" />
+                            <span style={{ fontSize: '14px', color: (formData.poster) ? '#1C1C1E' : '#C7C7CC', fontWeight: formData.poster ? 700 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {formData.poster instanceof File 
+                                    ? formData.poster.name 
+                                    : (formData.posterName)
+                                        ? formData.posterName
+                                        : (typeof formData.poster === 'string' && formData.poster)
+                                            ? `${formData.name || '대회'}_포스터.png` 
+                                            : "대회 포스터 이미지 선택 (JPG, PNG)"}
+                            </span>
+                        </div>
+                        {formData.poster ? (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setFormData({ ...formData, poster: null, posterName: null });
+                                }}
+                                style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', zIndex: 10 }}
+                                title="포스터 삭제"
+                            >
+                                <Icon name="close" size={16} color="#8E8E93" />
+                            </button>
+                        ) : null}
                         <input 
                             type="file" 
                             accept="image/*"
                             style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
-                                if (file) setFormData({ ...formData, poster: file });
+                                if (file) setFormData({ ...formData, poster: file, posterName: file.name });
                             }}
                         />
                     </div>
@@ -215,23 +233,83 @@ export const TournamentOverviewSection: React.FC<props> = ({
                     {/* Guideline / Syllabus Upload */}
                     <div 
                         className="inline-item" 
-                        style={{ height: '48px', cursor: 'pointer', position: 'relative' }}
+                        style={{ height: '48px', cursor: 'pointer', position: 'relative', justifyContent: 'space-between' }}
                     >
-                        <Icon name="document" size={18} color="#34C759" />
-                        <span style={{ fontSize: '14px', color: (formData.guideline) ? '#1C1C1E' : '#C7C7CC', fontWeight: formData.guideline ? 700 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {formData.guideline instanceof File 
-                                ? formData.guideline.name 
-                                : (typeof formData.guideline === 'string' && formData.guideline.startsWith('http'))
-                                    ? "대회 요강 파일이 등록됨" 
-                                    : "대회 요강 파일 선택(PDF, DOCX 등)"}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, overflow: 'hidden' }}>
+                            <Icon name="document" size={18} color="#34C759" />
+                            <span style={{ fontSize: '14px', color: (formData.guideline) ? '#1C1C1E' : '#C7C7CC', fontWeight: formData.guideline ? 700 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {formData.guideline instanceof File 
+                                    ? formData.guideline.name 
+                                    : (formData.guidelineName)
+                                        ? formData.guidelineName
+                                        : (typeof formData.guideline === 'string' && formData.guideline)
+                                            ? `${formData.name || '대회'}_요강.pdf` 
+                                            : "대회 요강 파일 선택 (PDF, DOCX 등)"}
+                            </span>
+                        </div>
+                        {formData.guideline ? (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setFormData({ ...formData, guideline: null, guidelineName: null });
+                                }}
+                                style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', zIndex: 10 }}
+                                title="대회 요강 삭제"
+                            >
+                                <Icon name="close" size={16} color="#8E8E93" />
+                            </button>
+                        ) : null}
                         <input 
                             type="file" 
                             accept=".pdf,.doc,.docx,.hwp,.txt"
                             style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
-                                if (file) setFormData({ ...formData, guideline: file });
+                                if (file) setFormData({ ...formData, guideline: file, guidelineName: file.name });
+                            }}
+                        />
+                    </div>
+
+                    {/* Souvenir T-Shirt Size Chart Image Upload */}
+                    <div 
+                        className="inline-item" 
+                        style={{ height: '48px', cursor: 'pointer', position: 'relative', justifyContent: 'space-between' }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, overflow: 'hidden' }}>
+                            <Icon name="gallery" size={18} color="#007AFF" />
+                            <span style={{ fontSize: '14px', color: (formData.tshirtImage) ? '#1C1C1E' : '#C7C7CC', fontWeight: formData.tshirtImage ? 700 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {formData.tshirtImage instanceof File 
+                                    ? formData.tshirtImage.name 
+                                    : (formData.tshirtImageName)
+                                        ? formData.tshirtImageName
+                                        : (typeof formData.tshirtImage === 'string' && formData.tshirtImage)
+                                            ? `${formData.name || '대회'}_티셔츠사이즈.png` 
+                                            : "참가기념 티셔츠 사이즈 이미지 선택 (JPG, PNG)"}
+                            </span>
+                        </div>
+                        {formData.tshirtImage ? (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setFormData({ ...formData, tshirtImage: null, tshirtImageName: null });
+                                }}
+                                style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', zIndex: 10 }}
+                                title="티셔츠 사이즈 이미지 삭제"
+                            >
+                                <Icon name="close" size={16} color="#8E8E93" />
+                            </button>
+                        ) : null}
+                        <input 
+                            type="file" 
+                            accept="image/*"
+                            style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) setFormData({ ...formData, tshirtImage: file, tshirtImageName: file.name });
                             }}
                         />
                     </div>
