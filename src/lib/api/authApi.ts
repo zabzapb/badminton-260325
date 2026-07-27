@@ -66,35 +66,40 @@ export async function getNaverProfileFromSDK(): Promise<any> {
                 isPopup: false,
                 callbackHandle: true
             });
-            naverLogin.init();
-            naverLogin.getLoginStatus((status: boolean) => {
-                if (status && naverLogin.user) {
-                    const u = naverLogin.user;
-                    const rawProfile = u._profile || {};
-                    const id = (typeof u.getId === 'function' ? u.getId() : u.id) || rawProfile.id;
-                    const name = (typeof u.getName === 'function' ? u.getName() : u.name) || rawProfile.name || rawProfile.nickname;
-                    const mobile = (typeof u.getMobile === 'function' ? u.getMobile() : (u.mobile || u.phone)) || rawProfile.mobile;
-                    const gender = (typeof u.getGender === 'function' ? u.getGender() : u.gender) || rawProfile.gender;
-                    const birthyear = (typeof u.getBirthyear === 'function' ? u.getBirthyear() : u.birthyear) || rawProfile.birthyear;
-                    const profile_image = (typeof u.getProfileImage === 'function' ? u.getProfileImage() : u.profile_image) || rawProfile.profile_image;
 
-                    if (id) {
-                        resolve({
-                            response: {
-                                id,
-                                name,
-                                nickname: u.nickname || rawProfile.nickname || name,
-                                mobile,
-                                gender,
-                                birthyear,
-                                profile_image
-                            }
-                        });
-                        return;
+            naverLogin.init();
+
+            // Give Naver SDK 100ms to parse the hash token and initialize internal state
+            setTimeout(() => {
+                naverLogin.getLoginStatus((status: boolean) => {
+                    if (status && naverLogin.user) {
+                        const u = naverLogin.user;
+                        const rawProfile = u._profile || u.raw || {};
+                        const id = (typeof u.getId === 'function' ? u.getId() : u.id) || rawProfile.id;
+                        const name = (typeof u.getName === 'function' ? u.getName() : u.name) || rawProfile.name || rawProfile.nickname;
+                        const mobile = (typeof u.getMobile === 'function' ? u.getMobile() : (u.mobile || u.phone)) || rawProfile.mobile;
+                        const gender = (typeof u.getGender === 'function' ? u.getGender() : u.gender) || rawProfile.gender;
+                        const birthyear = (typeof u.getBirthyear === 'function' ? u.getBirthyear() : u.birthyear) || rawProfile.birthyear;
+                        const profile_image = (typeof u.getProfileImage === 'function' ? u.getProfileImage() : u.profile_image) || rawProfile.profile_image;
+
+                        if (id) {
+                            resolve({
+                                response: {
+                                    id,
+                                    name: name || '네이버사용자',
+                                    nickname: u.nickname || rawProfile.nickname || name || '네이버사용자',
+                                    mobile: mobile || '',
+                                    gender: gender || 'M',
+                                    birthyear: birthyear || '',
+                                    profile_image: profile_image || ''
+                                }
+                            });
+                            return;
+                        }
                     }
-                }
-                reject(new Error('SDK_LOGIN_STATUS_FALSE'));
-            });
+                    reject(new Error('SDK_LOGIN_STATUS_FALSE'));
+                });
+            }, 100);
         } catch (e) {
             reject(e);
         }
@@ -153,7 +158,25 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
         console.warn('corsproxy.io failed, trying backup proxy...', e);
     }
 
-    // 3. CORS Proxy 2: allorigins
+    // 3. CORS Proxy 2: Codetabs
+    try {
+        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent('https://openapi.naver.com/v1/nid/me')}`;
+        const proxyRes = await fetch(proxyUrl, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        if (proxyRes.ok) {
+            const data = await proxyRes.json();
+            if (data?.response) {
+                authLogger.log('AUTH_NAVER_PROFILE_CODETABS_SUCCESS', { data });
+                return data;
+            }
+        }
+    } catch (e) {
+        console.warn('Codetabs proxy failed...', e);
+    }
+
+    // 4. CORS Proxy 3: allorigins
     try {
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://openapi.naver.com/v1/nid/me')}`;
         const proxyRes = await fetch(proxyUrl, {
@@ -171,7 +194,7 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
         console.warn('Backup CORS proxy failed, trying local API...', e);
     }
 
-    // 4. Serverless API fallback (if serverless endpoint exists)
+    // 5. Serverless API fallback (if serverless endpoint exists)
     try {
         const response = await fetch('/api/auth/profile', {
             method: 'POST',
@@ -186,5 +209,5 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
         authLogger.log('AUTH_NAVER_PROFILE_PROXY_ERROR', { error: err.message });
     }
 
-    throw new Error('ERR_PROXY_PROFILE_FAILED');
+    throw new Error(`네이버 프로필 조회 실패 (토큰: ${accessToken ? accessToken.substring(0, 8) + '...' : '없음'})`);
 }

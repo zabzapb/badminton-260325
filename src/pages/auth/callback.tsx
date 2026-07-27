@@ -33,18 +33,23 @@ export default function NaverAuthCallback() {
             hasProcessed.current = true;
 
             try {
-                // Parse access_token from URL hash (#access_token=...)
-                const hash = window.location.hash.startsWith('#')
-                    ? window.location.hash.substring(1)
-                    : window.location.hash;
+                // Parse access_token from full URL href to ensure hash/query compatibility
+                const href = window.location.href;
+                let accessToken: string | null = null;
+                let error: string | null = null;
 
-                const searchParams = new URLSearchParams(hash);
-                const accessToken = searchParams.get('access_token');
-                const error = searchParams.get('error');
+                if (href.includes('access_token=')) {
+                    const match = href.match(/access_token=([^&]+)/);
+                    if (match) accessToken = decodeURIComponent(match[1]);
+                }
+                if (href.includes('error=')) {
+                    const match = href.match(/error=([^&]+)/);
+                    if (match) error = decodeURIComponent(match[1]);
+                }
 
                 if (error || !accessToken) {
-                    const msg = `URL 토큰 오류: ${error || 'access_token이 존재하지 않음'}`;
-                    console.error(msg, { hash });
+                    const msg = `URL 토큰 파싱 실패: ${error || 'access_token 없음'} (href: ${href.substring(0, 80)}...)`;
+                    console.error(msg);
                     setErrorDetail(msg);
                     setStatus('error');
                     clearTimeout(safetyTimeout);
