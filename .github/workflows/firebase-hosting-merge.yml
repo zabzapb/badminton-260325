@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
 
       - name: Install Root & Functions Dependencies
         run: |
@@ -25,18 +25,9 @@ jobs:
       - name: Build Web App
         run: npm run build
 
-      - name: Create Service Account Key File
-        run: |
-          node -e 'fs.writeFileSync(process.env.KEY_PATH, process.env.KEY_DATA)'
-        env:
-          KEY_PATH: '${{ github.workspace }}/gcp-key.json'
-          KEY_DATA: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
-
       - name: Deploy to Firebase (Hosting & Functions)
-        run: npx firebase-tools deploy --project hctcplayer --non-interactive
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: '${{ github.workspace }}/gcp-key.json'
-
-      - name: Cleanup Key File
-        if: always()
-        run: rm -f '${{ github.workspace }}/gcp-key.json'
+          GCP_SA_KEY: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
