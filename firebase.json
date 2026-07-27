@@ -29,7 +29,10 @@
     "rewrites": [
       {
         "source": "/api/auth/naver-profile",
-        "function": "naverProfile"
+        "function": {
+          "functionId": "naverProfile",
+          "region": "asia-northeast3"
+        }
       },
       {
         "source": "**",
