@@ -173,13 +173,12 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
         errors.push(`SDK: ${e.message}`);
     }
 
-    // Method 2: allorigins.win Proxy
+    // Method 2: allorigins.win Proxy (oauth_token in URL)
     try {
         console.log('[Auth] Method 2: allorigins.win...');
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://openapi.naver.com/v1/nid/me')}`;
-        const res = await fetch(proxyUrl, {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
+        const naverUrl = `https://openapi.naver.com/v1/nid/me?oauth_token=${encodeURIComponent(accessToken)}`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(naverUrl)}`;
+        const res = await fetch(proxyUrl);
         if (res.ok) {
             const parsed = await res.json();
             if (parsed?.response) {
@@ -193,13 +192,12 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
         errors.push(`AllOrigins: ${e.message}`);
     }
 
-    // Method 3: corsproxy.io
+    // Method 3: corsproxy.io (oauth_token in URL)
     try {
         console.log('[Auth] Method 3: corsproxy.io...');
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://openapi.naver.com/v1/nid/me`)}`;
-        const res = await fetch(proxyUrl, {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
+        const naverUrl = `https://openapi.naver.com/v1/nid/me?oauth_token=${encodeURIComponent(accessToken)}`;
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(naverUrl)}`;
+        const res = await fetch(proxyUrl);
         if (res.ok) {
             const parsed = await res.json();
             if (parsed?.response) {
