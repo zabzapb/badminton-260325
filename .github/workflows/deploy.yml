@@ -1,4 +1,4 @@
-name: Deploy to Firebase
+name: Deploy to Firebase (Hosting & Functions)
 on:
   push:
     branches:
@@ -19,12 +19,21 @@ jobs:
       - name: Install Dependencies & Build
         run: |
           npm ci
+          cd functions && npm ci && cd ..
           npm run build
 
-      - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
-          channelId: live
-          projectId: hctcplayer
+      - name: Create GCP Credentials File
+        run: |
+          node -e 'fs.writeFileSync(process.env.KEY_PATH, process.env.KEY_DATA)'
+        env:
+          KEY_PATH: '${{ github.workspace }}/gcp-key.json'
+          KEY_DATA: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
+
+      - name: Deploy to Firebase (Hosting & Functions)
+        run: npx firebase-tools deploy --project hctcplayer --non-interactive
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: '${{ github.workspace }}/gcp-key.json'
+
+      - name: Cleanup GCP Credentials File
+        if: always()
+        run: rm -f '${{ github.workspace }}/gcp-key.json'
