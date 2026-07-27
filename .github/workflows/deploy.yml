@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - master
 
 jobs:
   build_and_deploy:
@@ -14,18 +15,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
 
       - name: Install Dependencies & Build
         run: |
           npm ci
-          cd functions && npm ci && cd ..
           npm run build
 
-      - name: Authenticate Google Cloud Service Account
-        uses: google-github-actions/auth@v2
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}
-
-      - name: Deploy to Firebase (Hosting & Functions)
-        run: npx firebase-tools deploy --project hctcplayer --non-interactive
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
+          channelId: live
+          projectId: hctcplayer
