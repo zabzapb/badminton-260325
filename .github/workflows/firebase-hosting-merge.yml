@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - master
 
 jobs:
   build_and_deploy:
@@ -15,6 +16,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install Root & Functions Dependencies
         run: |
@@ -24,10 +26,9 @@ jobs:
       - name: Build Web App
         run: npm run build
 
-      - name: Deploy to Firebase Hosting & Functions
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Deploy to Firebase (Hosting & Functions)
+        uses: w9jds/firebase-action@master
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
-          channelId: live
-          projectId: hctcplayer
+          args: deploy
+        env:
+          GCP_SA_KEY: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'

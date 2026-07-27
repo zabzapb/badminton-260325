@@ -173,9 +173,29 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
         errors.push(`SDK: ${e.message}`);
     }
 
-    // Method 2: Corsproxy.io (외부 무료 프록시 - 불안정할 수 있음)
+    // Method 2: allorigins.win Proxy
     try {
-        console.log('[Auth] Method 2: corsproxy.io...');
+        console.log('[Auth] Method 2: allorigins.win...');
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://openapi.naver.com/v1/nid/me')}`;
+        const res = await fetch(proxyUrl, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        if (res.ok) {
+            const parsed = await res.json();
+            if (parsed?.response) {
+                console.log('[Auth] ✅ allorigins.win SUCCESS');
+                authLogger.log('AUTH_NAVER_PROFILE_ALLORIGINS_SUCCESS', { data: parsed });
+                return parsed;
+            }
+        }
+    } catch (e: any) {
+        console.warn('[Auth] allorigins.win failed:', e.message);
+        errors.push(`AllOrigins: ${e.message}`);
+    }
+
+    // Method 3: corsproxy.io
+    try {
+        console.log('[Auth] Method 3: corsproxy.io...');
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://openapi.naver.com/v1/nid/me`)}`;
         const res = await fetch(proxyUrl, {
             headers: { 'Authorization': `Bearer ${accessToken}` }
