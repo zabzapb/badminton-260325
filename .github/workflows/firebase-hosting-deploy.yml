@@ -28,15 +28,16 @@ jobs:
 
       - name: Create Service Account Key File
         run: |
-          cat << 'EOF' > gcp-key.json
-          ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}
-          EOF
+          node -e 'fs.writeFileSync(process.env.KEY_PATH, process.env.KEY_DATA)'
+        env:
+          KEY_PATH: '${{ github.workspace }}/gcp-key.json'
+          KEY_DATA: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
 
       - name: Deploy to Firebase (Hosting & Functions)
         run: npx firebase-tools deploy --project hctcplayer --non-interactive
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json
+          GOOGLE_APPLICATION_CREDENTIALS: '${{ github.workspace }}/gcp-key.json'
 
       - name: Cleanup Key File
         if: always()
-        run: rm -f gcp-key.json
+        run: rm -f '${{ github.workspace }}/gcp-key.json'
