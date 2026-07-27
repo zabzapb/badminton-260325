@@ -17,15 +17,25 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Dependencies & Build
+      - name: Install Dependencies
         run: |
           npm ci
-          npm run build
+          cd functions && npm ci && cd ..
 
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
-          channelId: live
-          projectId: hctcplayer
+      - name: Build Web App
+        run: npm run build
+
+      - name: Write GCP Key
+        run: |
+          echo "$SA_KEY" > key.json
+        env:
+          SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}
+
+      - name: Deploy to Firebase (Functions + Hosting)
+        run: npx firebase-tools deploy --project hctcplayer --non-interactive
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: key.json
+
+      - name: Cleanup Key
+        if: always()
+        run: rm -f key.json
