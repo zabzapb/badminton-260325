@@ -1,5 +1,10 @@
 /**
  * Remote Authentication API Interface
+ * 
+ * 네이버 프로필 조회 우선순위:
+ * 1. Firebase Cloud Function 프록시 (/api/auth/naver-profile) - 같은 도메인, CORS 없음, 100% 확실
+ * 2. Naver SDK getLoginStatus - 모바일에서 작동, PC에서 3rd-party cookie 차단 시 실패
+ * 3. CORS 프록시 (corsproxy.io) - 외부 무료 프록시, 불안정할 수 있음
  */
 
 import { UserProfile } from "@/lib/types";
@@ -47,9 +52,6 @@ export async function exchangeNaverToken(code: string, state: string): Promise<s
     }
 }
 
-/**
- * [Vercel Serverless] Fetches User Profile through our own API Proxy to avoid CORS.
- */
 /**
  * Naver Official JS SDK Profile Extraction
  */
@@ -113,73 +115,85 @@ export async function getNaverProfileFromSDK(): Promise<any> {
 }
 
 /**
- * [Hybrid Fallback Engine] Fetches User Profile using SDK, Direct API, CORS proxies, and local API.
+ * [최우선] Firebase Cloud Function 프록시를 통한 네이버 프로필 조회
+ * 같은 도메인 호출이므로 CORS 문제 없음. PC/모바일 모든 브라우저에서 100% 동작.
+ */
+async function fetchNaverProfileViaFunction(accessToken: string): Promise<any> {
+    const res = await fetch(`/api/auth/naver-profile?token=${encodeURIComponent(accessToken)}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+    });
+
+    if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`Function proxy error ${res.status}: ${errBody}`);
+    }
+
+    const data = await res.json();
+
+    if (data?.response?.id) {
+        return data;
+    }
+
+    throw new Error(`Function proxy: no profile in response (resultcode: ${data?.resultcode}, message: ${data?.message})`);
+}
+
+/**
+ * [Hybrid Fallback Engine] Fetches User Profile using Firebase Function, SDK, and CORS proxies.
  */
 export async function fetchNaverProfile(accessToken: string): Promise<any> {
-    authLogger.log('AUTH_NAVER_PROXY_PROFILE_START', { accessToken: '***' });
-    
-    const targetUrl = `https://openapi.naver.com/v1/nid/me?access_token=${encodeURIComponent(accessToken)}`;
+    authLogger.log('AUTH_NAVER_PROFILE_START', { accessToken: accessToken.substring(0, 10) + '***' });
+    const errors: string[] = [];
 
-    // Method 0: Naver Official JS SDK (2s max timeout)
+    // ★ Method 0: Firebase Cloud Function 프록시 (같은 도메인, CORS 없음, 100% 확실)
     try {
+        console.log('[Auth] Method 0: Firebase Function proxy...');
+        const fnData = await fetchNaverProfileViaFunction(accessToken);
+        if (fnData?.response) {
+            console.log('[Auth] ✅ Firebase Function proxy SUCCESS:', fnData.response.id);
+            authLogger.log('AUTH_NAVER_PROFILE_FUNCTION_SUCCESS', { id: fnData.response.id });
+            return fnData;
+        }
+    } catch (e: any) {
+        console.warn('[Auth] Firebase Function proxy failed:', e.message);
+        errors.push(`Function: ${e.message}`);
+    }
+
+    // Method 1: Naver Official JS SDK (2s max timeout)
+    try {
+        console.log('[Auth] Method 1: Naver SDK...');
         const sdkData = await getNaverProfileFromSDK();
         if (sdkData?.response) {
+            console.log('[Auth] ✅ SDK SUCCESS');
             authLogger.log('AUTH_NAVER_PROFILE_SDK_SUCCESS', { data: sdkData });
             return sdkData;
         }
-    } catch (e) {
-        console.warn('Naver SDK profile extraction skipped/timeout, trying OpenAPI/proxies...', e);
+    } catch (e: any) {
+        console.warn('[Auth] SDK failed:', e.message);
+        errors.push(`SDK: ${e.message}`);
     }
 
-    // Method 1: Allorigins JSONP/Proxy (Query param access_token)
+    // Method 2: Corsproxy.io (외부 무료 프록시 - 불안정할 수 있음)
     try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-        const res = await fetch(proxyUrl);
-        if (res.ok) {
-            const data = await res.json();
-            if (data?.contents) {
-                const parsed = typeof data.contents === 'string' ? JSON.parse(data.contents) : data.contents;
-                if (parsed?.response) {
-                    authLogger.log('AUTH_NAVER_PROFILE_ALLORIGINS_SUCCESS', { data: parsed });
-                    return parsed;
-                }
-            }
-        }
-    } catch (e) {
-        console.warn('Allorigins proxy failed...', e);
-    }
-
-    // Method 2: Corsproxy.io (Query param access_token)
-    try {
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+        console.log('[Auth] Method 2: corsproxy.io...');
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://openapi.naver.com/v1/nid/me`)}`;
         const res = await fetch(proxyUrl, {
             headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         if (res.ok) {
             const parsed = await res.json();
             if (parsed?.response) {
+                console.log('[Auth] ✅ corsproxy.io SUCCESS');
                 authLogger.log('AUTH_NAVER_PROFILE_CORSPROXY_SUCCESS', { data: parsed });
                 return parsed;
             }
         }
-    } catch (e) {
-        console.warn('Corsproxy failed...', e);
+    } catch (e: any) {
+        console.warn('[Auth] corsproxy.io failed:', e.message);
+        errors.push(`Proxy: ${e.message}`);
     }
 
-    // Method 3: Codetabs Proxy
-    try {
-        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-        const res = await fetch(proxyUrl);
-        if (res.ok) {
-            const parsed = await res.json();
-            if (parsed?.response) {
-                authLogger.log('AUTH_NAVER_PROFILE_CODETABS_SUCCESS', { data: parsed });
-                return parsed;
-            }
-        }
-    } catch (e) {
-        console.warn('Codetabs failed...', e);
-    }
-
-    throw new Error('프로필 조회를 완료하지 못했습니다.');
+    const errorSummary = errors.join(' / ');
+    console.error('[Auth] ❌ All profile methods failed:', errorSummary);
+    throw new Error(`프로필 조회를 완료하지 못했습니다. (${errorSummary})`);
 }

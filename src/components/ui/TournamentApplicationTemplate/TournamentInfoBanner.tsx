@@ -17,7 +17,18 @@ export const TournamentInfoBanner: React.FC<TournamentInfoBannerProps> = ({
     tournament, displayEventDate, dDayStr, formattedDeadline, stats, selectedCategory, handleCopy
 }) => {
     const bgColor = getTournamentColor(tournament.id || "");
-    
+    const tObj = tournament as any;
+    const now = new Date();
+    const tDeadline = tObj?.deadline ? new Date(tObj.deadline + "T23:59:59") : null;
+    const eventDates: string[] = tObj?.eventDates || [];
+    const lastDateStr = eventDates.length > 0 
+        ? eventDates[eventDates.length - 1] 
+        : tObj?.eventDate;
+    const tEndDate = lastDateStr ? new Date(lastDateStr + "T23:59:59") : null;
+
+    const isFinished = (tEndDate && now > tEndDate) || (tObj?.status as string) === "finished";
+    const isClosed = (tDeadline && now > tDeadline) || (tObj?.status as string) === "closed";
+
     // safe number parsing
     const parseAmount = (val: any) => {
         if (typeof val === 'number') return val;
@@ -59,34 +70,51 @@ export const TournamentInfoBanner: React.FC<TournamentInfoBannerProps> = ({
     };
 
     return (
-        <article className="tournament-status-card" style={{ backgroundColor: bgColor, marginBottom: '32px', cursor: 'default', transform: 'none', border: 'none', padding: '32px 24px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', height: 'auto', minHeight: '180px', borderRadius: '12px' }}>
-            <div className="tournament-status-card__content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'flex-start', marginBottom: '4px' }}>
-                    <div className="tournament-status-card__info-group" style={{ flex: 1 }}>
-                        <h3 className="tournament-status-card__name" style={{ fontSize: '20px', marginBottom: '8px' }}>{tournament.name}</h3>
-                        <div className="tournament-status-card__sub-info" style={{ color: 'rgba(0,0,0,0.8)', fontSize: '13px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            <span>{displayEventDate}</span>
-                            <span style={{ display: 'flex', alignItems: 'center' }}><span style={{ margin: '0 8px', opacity: 0.3 }}>|</span>{tournament.venue}</span>
-                        </div>
-                    </div>
-                    <div className="tournament-status-card__side-action" style={{ textAlign: 'right' }}>
-                        <div className="status-open-group" style={{ alignItems: 'flex-end' }}>
-                            <span className="label-open-dday" style={{ fontSize: '24px', color: '#000', fontWeight: '900' }}>{dDayStr}</span>
-                        </div>
-                    </div>
+        <article className="tournament-status-card" style={{ backgroundColor: bgColor, marginBottom: '32px', cursor: 'default', transform: 'none', border: 'none', padding: '24px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', height: 'auto', borderRadius: '16px' }}>
+            <div className="tournament-status-card__content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px', width: '100%' }}>
+                
+                {/* 1. D-Day 및 별도 상태 뱃지 (1단) */}
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '18px', fontWeight: 900, color: isFinished ? 'rgba(0,0,0,0.4)' : '#1C1C1E' }}>
+                        {dDayStr || 'D-Day'}
+                    </span>
+
+                    {isFinished ? (
+                        <span style={{ background: 'rgba(0, 0, 0, 0.05)', color: 'rgba(0, 0, 0, 0.4)', fontSize: '12px', fontWeight: 500, padding: '3px 10px', borderRadius: '12px' }}>
+                            대회 종료
+                        </span>
+                    ) : isClosed ? (
+                        <span style={{ background: 'rgba(0, 0, 0, 0.06)', color: 'rgba(0, 0, 0, 0.6)', fontSize: '12px', fontWeight: 700, padding: '3px 10px', borderRadius: '12px' }}>
+                            접수 마감
+                        </span>
+                    ) : (
+                        <span style={{ background: 'rgba(236, 104, 62, 0.12)', color: '#EC683E', fontSize: '12px', fontWeight: 800, padding: '3px 10px', borderRadius: '12px' }}>
+                            접수 중
+                        </span>
+                    )}
                 </div>
 
-                <div 
-                    className="deadline-info" 
-                    style={{ 
-                        width: '100%', fontSize: '12px', color: '#000', opacity: 0.6, 
-                        fontWeight: '500'
-                    }}
-                >
-                    접수마감 {formattedDeadline}
+                {/* 2. 대회명 (전폭 100% 한 줄 가독성 보장) */}
+                <h3 className="tournament-status-card__name" style={{ width: '100%', fontSize: '18px', fontWeight: 800, color: isFinished ? 'rgba(0,0,0,0.45)' : '#1C1C1E', margin: '4px 0 2px 0', lineHeight: '1.3' }}>
+                    {tournament.name}
+                </h3>
+
+                {/* 3. 날짜 및 장소 */}
+                <div className="tournament-status-card__sub-info" style={{ color: isFinished ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.8)', fontSize: '13px', display: 'flex', gap: '8px', alignItems: 'center', marginTop: '2px' }}>
+                    <span className="info-date">{displayEventDate}</span>
+                    <span style={{ opacity: 0.3 }}>|</span>
+                    <span className="info-venue">{tournament.venue}</span>
                 </div>
 
-                <div className="stats-info" style={{ width: '100%', fontSize: '12px', color: 'rgba(0,0,0,0.5)', fontWeight: '400', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 10px' }}>
+                {/* 4. 마감일 표기 */}
+                {formattedDeadline && (
+                    <div style={{ fontSize: '12px', color: isFinished ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.5)', fontWeight: 500, marginTop: '1px' }}>
+                        {formattedDeadline.startsWith('접수 마감') || formattedDeadline.startsWith('접수마감') ? formattedDeadline : `접수 마감 ${formattedDeadline}`}
+                    </div>
+                )}
+
+                {/* 5. 참가자 현황 (상단 구분선 추가) */}
+                <div className="stats-info" style={{ width: '100%', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(0,0,0,0.06)', fontSize: '12px', color: 'rgba(0,0,0,0.5)', fontWeight: '400', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 10px' }}>
                     <div style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ fontWeight: 400 }}>Total</span>
                         <strong style={{ fontWeight: 800, color: '#000', fontSize: '13px' }}>{stats.s + stats.md + stats.wd + stats.xd}</strong>

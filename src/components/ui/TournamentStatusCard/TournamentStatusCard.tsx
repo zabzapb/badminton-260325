@@ -81,18 +81,42 @@ export function getTournamentTimeInfo(eventDateStr: string, deadlineStr?: string
 
     // 2. Format deadline
     let deadlineText = "";
+    let deadlineDiffDays: number | null = null;
+    let deadlineUrgentText = "";
+
     if (deadlineStr) {
         const dDate = new Date(deadlineStr);
+        if (!isNaN(dDate.getTime())) {
+            const today = new Date();
+            dDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            const diffTime = dDate.getTime() - today.getTime();
+            deadlineDiffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (deadlineDiffDays === 0) {
+                deadlineUrgentText = "오늘 마감";
+            } else if (deadlineDiffDays > 0) {
+                deadlineUrgentText = `접수 마감 ${deadlineDiffDays}일 전`;
+            } else {
+                deadlineUrgentText = "접수 마감";
+            }
+        }
+
+        const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+        const year = dDate.getFullYear();
         const month = (dDate.getMonth() + 1).toString().padStart(2, '0');
         const day = dDate.getDate().toString().padStart(2, '0');
-        deadlineText = `접수마감 ${month}.${day}.`;
+        const dayOfWeek = daysOfWeek[dDate.getDay()];
+        deadlineText = `접수 마감 ${year}.${month}.${day}. (${dayOfWeek})`;
     } else {
-        deadlineText = "접수마감 미정";
+        deadlineText = "접수 마감 미정";
     }
 
     return {
         dday: ddayText,
-        deadline: deadlineText
+        deadline: deadlineText,
+        deadlineDiffDays,
+        deadlineUrgentText
     };
 }
 

@@ -189,16 +189,16 @@ export function TournamentApplicationTemplate({ id, isEdit = false }: { id: stri
                     let displayDate = tournament.eventDate || "";
                     const ed = tournament.eventDates || [];
                     if (ed.length > 0) displayDate = ed.length === 1 ? ed[0].replace(/-/g, ".") : `${ed[0].replace(/-/g, ".")} - ${ed[1].split("-").pop()}`;
-                    const { dday } = getTournamentTimeInfo(displayDate, tournament.deadline);
+                    const { dday, deadline: formattedDeadline } = getTournamentTimeInfo(displayDate, tournament.deadline);
                     return (
                         <TournamentInfoBanner 
                             tournament={tournament} 
                             displayEventDate={displayDate} 
                             dDayStr={dday} 
-                            formattedDeadline={tournament.deadline} 
+                            formattedDeadline={formattedDeadline} 
                             stats={stats} 
                             selectedCategory={selectedCategory} 
-                            handleCopy={() => { // [수정] 누락된 prop 추가
+                            handleCopy={() => {
                                 const info = `${tournament.account?.bank || ""} ${tournament.account?.accountNumber || ""} ${tournament.account?.owner || ""}`;
                                 navigator.clipboard.writeText(info);
                                 alert("계좌정보가 복사되었습니다.");

@@ -28,9 +28,23 @@
     ],
     "rewrites": [
       {
+        "source": "/api/auth/naver-profile",
+        "function": {
+          "functionId": "naverProfile",
+          "region": "asia-northeast3"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
     ]
-  }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "runtime": "nodejs22"
+    }
+  ]
 }

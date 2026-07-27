@@ -119,12 +119,11 @@
     background-color: #F2F2F7; /* iOS style background */
     display: flex;
     flex-direction: column;
-    align-items: center; /* Center for PC */
+    width: 100%;
 }
 
 .apply-page .app-body > * {
     width: 100%;
-    max-width: 480px; /* Consistent with HKDK design system */
 }
 
 .tournament-application-form {
