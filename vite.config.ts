@@ -11,57 +11,64 @@ export default defineConfig({
     {
       name: 'local-api-auth-profile-dev',
       configureServer(server) {
-        // [Local Dev Support] Middleware for /api/auth/profile during `npm run dev` (dev.bat)
-        server.middlewares.use('/api/auth/profile', async (req, res) => {
-          if (req.method !== 'POST') {
-            res.statusCode = 405;
-            return res.end(JSON.stringify({ success: false, error: 'Method Not Allowed' }));
-          }
+        // [Local Dev Support] Middleware for /api/auth/naver-profile during `npm run dev`
+        server.middlewares.use('/api/auth/naver-profile', async (req, res) => {
+          try {
+            const urlObj = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
+            let token = urlObj.searchParams.get('token');
 
-          let body = '';
-          req.on('data', chunk => { body += chunk.toString(); });
-          req.on('end', async () => {
-            try {
-              const { accessToken } = JSON.parse(body);
-              if (!accessToken) {
-                res.statusCode = 400;
-                return res.end(JSON.stringify({ success: false, error: 'Access token is required' }));
-              }
-
-              // Fetch user profile from Naver server-side (Node.js) to avoid CORS
-              const profileResponse = await fetch('https://openapi.naver.com/v1/nid/me', {
-                headers: {
-                  'Authorization': `Bearer ${accessToken}`,
-                  'Accept': 'application/json'
-                }
+            if (!token && req.method === 'POST') {
+              let body = '';
+              await new Promise<void>((resolve) => {
+                req.on('data', chunk => { body += chunk.toString(); });
+                req.on('end', () => resolve());
               });
-
-              const data = await profileResponse.json();
-              res.setHeader('Content-Type', 'application/json');
-
-              if (!profileResponse.ok || data.resultcode !== '00') {
-                res.statusCode = profileResponse.status;
-                return res.end(JSON.stringify({
-                  success: false,
-                  error: data.message || 'Failed to fetch Naver profile'
-                }));
+              if (body) {
+                try {
+                  const parsed = JSON.parse(body);
+                  token = parsed.token || parsed.accessToken;
+                } catch (e) {}
               }
+            }
 
-              res.end(JSON.stringify({
-                success: true,
-                profile: data
-              }));
+            if (!token) {
+              res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              return res.end(JSON.stringify({ success: false, error: 'Missing access token parameter' }));
+            }
 
-            } catch (error: any) {
-              console.error('[LOCAL_DEV_PROFILE_ERROR]', error);
-              res.statusCode = 500;
-              res.end(JSON.stringify({ 
-                success: false, 
-                error: 'Internal server error while fetching profile',
-                message: error.message 
+            // Fetch user profile from Naver server-side (Node.js) to avoid CORS
+            const profileResponse = await fetch('https://openapi.naver.com/v1/nid/me', {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+              }
+            });
+
+            const data = await profileResponse.json();
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+            if (!profileResponse.ok) {
+              res.statusCode = profileResponse.status;
+              return res.end(JSON.stringify({
+                success: false,
+                error: `Naver API returned ${profileResponse.status}`,
+                data
               }));
             }
-          });
+
+            res.statusCode = 200;
+            res.end(JSON.stringify(data));
+
+          } catch (error: any) {
+            console.error('[LOCAL_DEV_PROFILE_ERROR]', error);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ 
+              success: false, 
+              error: error.message || 'Internal dev proxy error'
+            }));
+          }
         });
       }
     }

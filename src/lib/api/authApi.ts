@@ -15,10 +15,25 @@ import { authLogger } from "@/core/utils/logger";
 export async function fetchNaverProfile(accessToken: string): Promise<any> {
     authLogger.log('AUTH_NAVER_PROFILE_START', { accessToken: accessToken.substring(0, 10) + '***' });
 
-    const res = await fetch(`/api/auth/naver-profile?token=${encodeURIComponent(accessToken)}`, {
+    const primaryUrl = `/api/auth/naver-profile?token=${encodeURIComponent(accessToken)}`;
+    
+    let res = await fetch(primaryUrl, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
     });
+
+    const contentType = res.headers.get('content-type') || '';
+
+    // If Firebase Hosting fallback returned SPA index.html instead of JSON API response
+    if (contentType.includes('text/html')) {
+        authLogger.log('AUTH_NAVER_PROFILE_WARN', { message: 'Primary proxy returned HTML, trying direct Cloud Function' });
+        // Direct Cloud Function endpoint fallback if hosting rewrite is pending/bypassed
+        const directUrl = `https://asia-northeast3-hctcplayer.cloudfunctions.net/naverProfile?token=${encodeURIComponent(accessToken)}`;
+        res = await fetch(directUrl, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+        });
+    }
 
     if (!res.ok) {
         const errBody = await res.text();
@@ -32,5 +47,5 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
         return data;
     }
 
-    throw new Error(data?.message || '네이버 프로필 응답 데이터에 사용자 ID가 없습니다.');
+    throw new Error(data?.message || data?.error || '네이버 프로필 응답 데이터에 사용자 ID가 없습니다.');
 }

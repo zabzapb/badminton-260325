@@ -19,17 +19,22 @@ import './callback.css';
 
 /** URL에서 access_token 파싱 */
 function parseAccessTokenFromUrl(): { accessToken: string | null; error: string | null } {
-    const href = window.location.href;
+    const fullUrl = window.location.href;
+    const hash = window.location.hash;
+    const search = window.location.search;
+    const combined = `${fullUrl} ${hash} ${search}`;
+
     let accessToken: string | null = null;
     let error: string | null = null;
 
-    if (href.includes('access_token=')) {
-        const match = href.match(/access_token=([^&#]+)/);
-        if (match) accessToken = decodeURIComponent(match[1]);
+    const tokenMatch = combined.match(/access_token=([^&#]+)/);
+    if (tokenMatch) {
+        accessToken = decodeURIComponent(tokenMatch[1]);
     }
-    if (href.includes('error=')) {
-        const match = href.match(/error=([^&#]+)/);
-        if (match) error = decodeURIComponent(match[1]);
+
+    const errorMatch = combined.match(/error=([^&#]+)/);
+    if (errorMatch) {
+        error = decodeURIComponent(errorMatch[1]);
     }
 
     return { accessToken, error };

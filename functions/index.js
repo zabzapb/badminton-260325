@@ -18,8 +18,9 @@ exports.naverProfile = onRequest(
   },
   async (req, res) => {
     // access_token 추출 (쿼리 또는 바디)
-    const token = req.query.token || (req.body && req.body.token);
+    const token = req.query.token || (req.body && (req.body.token || req.body.accessToken));
     if (!token) {
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
       return res.status(400).json({ 
         success: false, 
         error: "Missing access token parameter" 
