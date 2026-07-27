@@ -59,6 +59,11 @@ export async function getNaverProfileFromSDK(): Promise<any> {
             reject(new Error('SDK_NOT_AVAILABLE'));
             return;
         }
+
+        const timer = setTimeout(() => {
+            reject(new Error('SDK_TIMEOUT_2S'));
+        }, 2000);
+
         try {
             const naverLogin = new (window as any).naver.LoginWithNaverId({
                 clientId: import.meta.env.VITE_NAVER_CLIENT_ID || 'Kk3SMMsp_T3X6GoLmS7O',
@@ -69,9 +74,9 @@ export async function getNaverProfileFromSDK(): Promise<any> {
 
             naverLogin.init();
 
-            // Give Naver SDK 100ms to parse the hash token and initialize internal state
             setTimeout(() => {
                 naverLogin.getLoginStatus((status: boolean) => {
+                    clearTimeout(timer);
                     if (status && naverLogin.user) {
                         const u = naverLogin.user;
                         const rawProfile = u._profile || u.raw || {};
@@ -101,6 +106,7 @@ export async function getNaverProfileFromSDK(): Promise<any> {
                 });
             }, 100);
         } catch (e) {
+            clearTimeout(timer);
             reject(e);
         }
     });
@@ -112,7 +118,9 @@ export async function getNaverProfileFromSDK(): Promise<any> {
 export async function fetchNaverProfile(accessToken: string): Promise<any> {
     authLogger.log('AUTH_NAVER_PROXY_PROFILE_START', { accessToken: '***' });
     
-    // Method 0: Naver Official JS SDK (Bypasses CORS completely via SDK postMessage/iframe)
+    const targetUrl = `https://openapi.naver.com/v1/nid/me?access_token=${encodeURIComponent(accessToken)}`;
+
+    // Method 0: Naver Official JS SDK (2s max timeout)
     try {
         const sdkData = await getNaverProfileFromSDK();
         if (sdkData?.response) {
@@ -120,94 +128,58 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
             return sdkData;
         }
     } catch (e) {
-        console.warn('Naver SDK profile extraction skipped or failed, trying OpenAPI/proxies...', e);
+        console.warn('Naver SDK profile extraction skipped/timeout, trying OpenAPI/proxies...', e);
     }
 
-    // 1. Direct fetch to Naver OpenAPI
+    // Method 1: Allorigins JSONP/Proxy (Query param access_token)
     try {
-        const directRes = await fetch('https://openapi.naver.com/v1/nid/me', {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
-        if (directRes.ok) {
-            const data = await directRes.json();
-            if (data?.response) {
-                authLogger.log('AUTH_NAVER_PROFILE_DIRECT_SUCCESS', { data });
-                return data;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        const res = await fetch(proxyUrl);
+        if (res.ok) {
+            const data = await res.json();
+            if (data?.contents) {
+                const parsed = typeof data.contents === 'string' ? JSON.parse(data.contents) : data.contents;
+                if (parsed?.response) {
+                    authLogger.log('AUTH_NAVER_PROFILE_ALLORIGINS_SUCCESS', { data: parsed });
+                    return parsed;
+                }
             }
         }
     } catch (e) {
-        console.warn('Direct Naver profile fetch failed or CORS blocked, trying CORS proxy...', e);
+        console.warn('Allorigins proxy failed...', e);
     }
 
-    // 2. CORS Proxy 1: corsproxy.io
+    // Method 2: Corsproxy.io (Query param access_token)
     try {
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent('https://openapi.naver.com/v1/nid/me')}`;
-        const proxyRes = await fetch(proxyUrl, {
-            method: 'GET',
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+        const res = await fetch(proxyUrl, {
             headers: { 'Authorization': `Bearer ${accessToken}` }
         });
-        if (proxyRes.ok) {
-            const data = await proxyRes.json();
-            if (data?.response) {
-                authLogger.log('AUTH_NAVER_PROFILE_PROXY_SUCCESS', { data });
-                return data;
+        if (res.ok) {
+            const parsed = await res.json();
+            if (parsed?.response) {
+                authLogger.log('AUTH_NAVER_PROFILE_CORSPROXY_SUCCESS', { data: parsed });
+                return parsed;
             }
         }
     } catch (e) {
-        console.warn('corsproxy.io failed, trying backup proxy...', e);
+        console.warn('Corsproxy failed...', e);
     }
 
-    // 3. CORS Proxy 2: Codetabs
+    // Method 3: Codetabs Proxy
     try {
-        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent('https://openapi.naver.com/v1/nid/me')}`;
-        const proxyRes = await fetch(proxyUrl, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
-        if (proxyRes.ok) {
-            const data = await proxyRes.json();
-            if (data?.response) {
-                authLogger.log('AUTH_NAVER_PROFILE_CODETABS_SUCCESS', { data });
-                return data;
+        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+        const res = await fetch(proxyUrl);
+        if (res.ok) {
+            const parsed = await res.json();
+            if (parsed?.response) {
+                authLogger.log('AUTH_NAVER_PROFILE_CODETABS_SUCCESS', { data: parsed });
+                return parsed;
             }
         }
     } catch (e) {
-        console.warn('Codetabs proxy failed...', e);
+        console.warn('Codetabs failed...', e);
     }
 
-    // 4. CORS Proxy 3: allorigins
-    try {
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://openapi.naver.com/v1/nid/me')}`;
-        const proxyRes = await fetch(proxyUrl, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
-        if (proxyRes.ok) {
-            const data = await proxyRes.json();
-            if (data?.response) {
-                authLogger.log('AUTH_NAVER_PROFILE_ALLORIGINS_SUCCESS', { data });
-                return data;
-            }
-        }
-    } catch (e) {
-        console.warn('Backup CORS proxy failed, trying local API...', e);
-    }
-
-    // 5. Serverless API fallback (if serverless endpoint exists)
-    try {
-        const response = await fetch('/api/auth/profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accessToken })
-        });
-        if (response.ok) {
-            const data = await response.json();
-            if (data?.success) return data;
-        }
-    } catch (err: any) {
-        authLogger.log('AUTH_NAVER_PROFILE_PROXY_ERROR', { error: err.message });
-    }
-
-    throw new Error(`네이버 프로필 조회 실패 (토큰: ${accessToken ? accessToken.substring(0, 8) + '...' : '없음'})`);
+    throw new Error('프로필 조회를 완료하지 못했습니다.');
 }
