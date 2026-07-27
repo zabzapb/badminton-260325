@@ -1,27 +1,22 @@
 /**
- * HCTC Player - Firebase Cloud Functions
+ * HCTC Player - Firebase Cloud Functions (v2)
  * 
  * naverProfile: 네이버 프로필 API 서버사이드 프록시
+ * - invoker: "public" 설정으로 GCP IAM 403 Forbidden 권한 에러 완벽 해결
  * - 같은 도메인(player.nstove.com)에서 호출되므로 CORS 완전 해결
- * - 클라이언트가 /api/auth/naver-profile?token=xxx 로 호출
- * - 서버에서 네이버 OpenAPI 호출 후 결과 반환
  */
 
-const functions = require("firebase-functions");
+const { onRequest } = require("firebase-functions/v2/https");
 
-exports.naverProfile = functions
-  .region("asia-northeast3") // 서울 리전 (최소 지연)
-  .runWith({ timeoutSeconds: 10, memory: "128MB" })
-  .https.onRequest(async (req, res) => {
-    // CORS 헤더 (로컬 개발 환경 대응)
-    res.set("Access-Control-Allow-Origin", "*");
-    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.set("Access-Control-Allow-Headers", "Content-Type");
-
-    if (req.method === "OPTIONS") {
-      return res.status(204).send("");
-    }
-
+exports.naverProfile = onRequest(
+  {
+    region: "asia-northeast3",
+    cors: true,
+    invoker: "public", // 공개 액세스 권한(allUsers -> Cloud Functions Invoker) 자동 부여
+    timeoutSeconds: 10,
+    memory: "128MiB"
+  },
+  async (req, res) => {
     // access_token 추출 (쿼리 또는 바디)
     const token = req.query.token || (req.body && req.body.token);
     if (!token) {
@@ -57,4 +52,5 @@ exports.naverProfile = functions
         error: err.message || "Internal proxy error",
       });
     }
-  });
+  }
+);
