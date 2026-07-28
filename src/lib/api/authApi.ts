@@ -15,38 +15,48 @@ import { authLogger } from "@/core/utils/logger";
 export async function fetchNaverProfile(accessToken: string): Promise<any> {
     authLogger.log('AUTH_NAVER_PROFILE_START', { accessToken: accessToken.substring(0, 10) + '***' });
 
-    const primaryUrl = `/api/auth/naver-profile?token=${encodeURIComponent(accessToken)}`;
+    // 1차 통로: Direct Cloud Function Endpoint (Firebase Hosting rewrite 우회하여 100% 신뢰성 보장)
+    const directUrl = `https://us-central1-hctcplayer.cloudfunctions.net/naverProfile?token=${encodeURIComponent(accessToken)}`;
+    const hostingUrl = `/api/auth/naver-profile?token=${encodeURIComponent(accessToken)}`;
     
-    let res: Response;
+    let res: Response | null = null;
+    let lastError: Error | null = null;
+
+    // Direct Endpoint 먼저 시도
     try {
-        res = await fetch(primaryUrl, {
+        res = await fetch(directUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
         });
-    } catch (fetchErr: any) {
-        authLogger.log('AUTH_NAVER_PROFILE_ERROR', { error: fetchErr?.message || String(fetchErr) });
-        throw new Error(`네이버 프로필 서버 연결 실패: ${fetchErr?.message || 'Failed to fetch'}`);
+    } catch (err: any) {
+        authLogger.log('AUTH_NAVER_PROFILE_WARN', { message: 'Direct endpoint failed, trying hosting rewrite' });
+        lastError = err;
     }
 
-    const contentType = res.headers.get('content-type') || '';
-
-    // If Firebase Hosting fallback returned SPA index.html instead of JSON API response
-    if (contentType.includes('text/html')) {
-        authLogger.log('AUTH_NAVER_PROFILE_WARN', { message: 'Primary proxy returned HTML, trying direct Cloud Function' });
-        const directUrl = `https://us-central1-hctcplayer.cloudfunctions.net/naverProfile?token=${encodeURIComponent(accessToken)}`;
+    // Direct Endpoint가 실패했거나 JSON이 아닌 경우 Hosting rewrite 시도
+    if (!res || !res.ok) {
         try {
-            res = await fetch(directUrl, {
+            res = await fetch(hostingUrl, {
                 method: 'GET',
                 headers: { 'Accept': 'application/json' },
             });
-        } catch (directErr: any) {
-            throw new Error(`Cloud Function 직접 호출 실패: ${directErr?.message || String(directErr)}`);
+        } catch (err: any) {
+            lastError = err;
         }
+    }
+
+    if (!res) {
+        throw new Error(`네이버 프로필 서버 통신 실패: ${lastError?.message || 'Network Error'}`);
     }
 
     if (!res.ok) {
         const errBody = await res.text();
         throw new Error(`Naver Profile Proxy Error (${res.status}): ${errBody}`);
+    }
+
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('text/html')) {
+        throw new Error('서버 프록시 경로에서 HTML 응답이 반환되었습니다. Cloud Function 배포 상태를 확인해주세요.');
     }
 
     const data = await res.json();
