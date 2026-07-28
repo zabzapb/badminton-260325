@@ -15,31 +15,35 @@ import { authLogger } from "@/core/utils/logger";
 export async function fetchNaverProfile(accessToken: string): Promise<any> {
     authLogger.log('AUTH_NAVER_PROFILE_START', { accessToken: accessToken.substring(0, 10) + '***' });
 
-    // 1차 통로: Direct Cloud Function Endpoint (Firebase Hosting rewrite 우회하여 100% 신뢰성 보장)
-    const directUrl = `https://us-central1-hctcplayer.cloudfunctions.net/naverProfile?token=${encodeURIComponent(accessToken)}`;
+    // 1차 통로: Same-Origin Hosting Proxy (Firebase Hosting rewrites through asia-northeast3)
     const hostingUrl = `/api/auth/naver-profile?token=${encodeURIComponent(accessToken)}`;
+    const directUrl = `https://asia-northeast3-hctcplayer.cloudfunctions.net/naverProfile?token=${encodeURIComponent(accessToken)}`;
     
     let res: Response | null = null;
     let lastError: Error | null = null;
 
-    // Direct Endpoint 먼저 시도
+    // 1차: Firebase Hosting Rewrite 요청
     try {
-        res = await fetch(directUrl, {
+        res = await fetch(hostingUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
         });
     } catch (err: any) {
-        authLogger.log('AUTH_NAVER_PROFILE_WARN', { message: 'Direct endpoint failed, trying hosting rewrite' });
+        authLogger.log('AUTH_NAVER_PROFILE_WARN', { message: 'Hosting rewrite failed, trying direct endpoint' });
         lastError = err;
     }
 
-    // Direct Endpoint가 실패했거나 JSON이 아닌 경우 Hosting rewrite 시도
-    if (!res || !res.ok) {
+    // 만약 호스팅 프록시가 실패했거나 HTML(index.html)이 떨어진 경우 2차 Direct Endpoint 시도
+    const contentType = res?.headers.get('content-type') || '';
+    if (!res || !res.ok || contentType.includes('text/html')) {
         try {
-            res = await fetch(hostingUrl, {
+            const fallbackRes = await fetch(directUrl, {
                 method: 'GET',
                 headers: { 'Accept': 'application/json' },
             });
+            if (fallbackRes.ok) {
+                res = fallbackRes;
+            }
         } catch (err: any) {
             lastError = err;
         }
@@ -52,11 +56,6 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
     if (!res.ok) {
         const errBody = await res.text();
         throw new Error(`Naver Profile Proxy Error (${res.status}): ${errBody}`);
-    }
-
-    const contentType = res.headers.get('content-type') || '';
-    if (contentType.includes('text/html')) {
-        throw new Error('서버 프록시 경로에서 HTML 응답이 반환되었습니다. Cloud Function 배포 상태를 확인해주세요.');
     }
 
     const data = await res.json();
