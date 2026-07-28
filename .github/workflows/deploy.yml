@@ -18,21 +18,26 @@ jobs:
           node-version: '22'
 
       - name: Install Root Dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci
 
       - name: Build Web Frontend
-        run: npx vite build
+        run: npm run build
 
       - name: Install Functions Dependencies
-        run: |
-          cd functions
-          npm install --legacy-peer-deps
-          cd ..
+        run: npm ci --prefix functions
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+      - name: Deploy Hosting to Firebase
+        uses: w9jds/firebase-action@v13.4.0
         with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
+          args: deploy --only hosting
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}
+          PROJECT_ID: hctcplayer
 
-      - name: Deploy to Firebase (Hosting & Functions)
-        run: npx firebase-tools deploy --only hosting,functions --project hctcplayer
+      - name: Deploy Functions to Firebase
+        uses: w9jds/firebase-action@v13.4.0
+        with:
+          args: deploy --only functions
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}
+          PROJECT_ID: hctcplayer
