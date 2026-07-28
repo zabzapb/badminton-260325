@@ -17,11 +17,17 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install & Build
+      - name: Install Root Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build Web Frontend
+        run: npx vite build
+
+      - name: Install Functions Dependencies
         run: |
-          npm install
-          cd functions && npm install && cd ..
-          npm run build
+          cd functions
+          npm install --legacy-peer-deps
+          cd ..
 
       - name: Deploy to Firebase (Hosting & Functions)
         env:
