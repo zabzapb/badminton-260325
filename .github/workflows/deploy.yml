@@ -20,6 +20,7 @@ jobs:
       - name: Install Dependencies & Build
         run: |
           npm ci
+          cd functions && npm ci && cd ..
           npm run build
 
       - name: Deploy to Firebase Hosting
@@ -29,3 +30,10 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
           channelId: live
           projectId: hctcplayer
+
+      - name: Deploy to Firebase Functions
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions
+        env:
+          GCP_SA_KEY: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
