@@ -17,22 +17,31 @@ export async function fetchNaverProfile(accessToken: string): Promise<any> {
 
     const primaryUrl = `/api/auth/naver-profile?token=${encodeURIComponent(accessToken)}`;
     
-    let res = await fetch(primaryUrl, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-    });
+    let res: Response;
+    try {
+        res = await fetch(primaryUrl, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+        });
+    } catch (fetchErr: any) {
+        authLogger.log('AUTH_NAVER_PROFILE_ERROR', { error: fetchErr?.message || String(fetchErr) });
+        throw new Error(`네이버 프로필 서버 연결 실패: ${fetchErr?.message || 'Failed to fetch'}`);
+    }
 
     const contentType = res.headers.get('content-type') || '';
 
     // If Firebase Hosting fallback returned SPA index.html instead of JSON API response
     if (contentType.includes('text/html')) {
         authLogger.log('AUTH_NAVER_PROFILE_WARN', { message: 'Primary proxy returned HTML, trying direct Cloud Function' });
-        // Direct Cloud Function endpoint fallback if hosting rewrite is pending/bypassed
-        const directUrl = `https://asia-northeast3-hctcplayer.cloudfunctions.net/naverProfile?token=${encodeURIComponent(accessToken)}`;
-        res = await fetch(directUrl, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' },
-        });
+        const directUrl = `https://us-central1-hctcplayer.cloudfunctions.net/naverProfile?token=${encodeURIComponent(accessToken)}`;
+        try {
+            res = await fetch(directUrl, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+            });
+        } catch (directErr: any) {
+            throw new Error(`Cloud Function 직접 호출 실패: ${directErr?.message || String(directErr)}`);
+        }
     }
 
     if (!res.ok) {

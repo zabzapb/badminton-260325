@@ -1,22 +1,24 @@
 /**
- * HCTC Player - Firebase Cloud Functions (v2)
+ * HCTC Player - Firebase Cloud Functions (v1 Compatible)
  * 
  * naverProfile: 네이버 프로필 API 서버사이드 프록시
- * - invoker: "public" 설정으로 GCP IAM 403 Forbidden 권한 에러 완벽 해결
- * - 같은 도메인(player.nstove.com)에서 호출되므로 CORS 완전 해결
+ * - 1세대 Cloud Functions 호환으로 기존 함수와 충돌 없이 바로 덮어쓰기 배포 가능
+ * - CORS 및 Same-Origin 요청 지원
  */
 
-const { onRequest } = require("firebase-functions/v2/https");
+const functions = require("firebase-functions");
 
-exports.naverProfile = onRequest(
-  {
-    region: "asia-northeast3",
-    cors: true,
-    invoker: "public", // 공개 액세스 권한(allUsers -> Cloud Functions Invoker) 자동 부여
-    timeoutSeconds: 10,
-    memory: "128MiB"
-  },
-  async (req, res) => {
+exports.naverProfile = functions
+  .https.onRequest(async (req, res) => {
+    // CORS 헤더 설정
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    if (req.method === "OPTIONS") {
+      return res.status(204).send("");
+    }
+
     // access_token 추출 (쿼리 또는 바디)
     const token = req.query.token || (req.body && (req.body.token || req.body.accessToken));
     if (!token) {
@@ -28,7 +30,7 @@ exports.naverProfile = onRequest(
     }
 
     try {
-      // 네이버 프로필 API 서버사이드 호출 (CORS 없음!)
+      // 네이버 프로필 API 서버사이드 호출
       const response = await fetch("https://openapi.naver.com/v1/nid/me", {
         headers: { "Authorization": `Bearer ${token}` },
       });
@@ -53,5 +55,4 @@ exports.naverProfile = onRequest(
         error: err.message || "Internal proxy error",
       });
     }
-  }
-);
+  });
