@@ -15,19 +15,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Install Dependencies & Build
+      - name: Install & Build
         run: |
-          npm ci
-          cd functions && npm ci && cd ..
+          npm install
+          cd functions && npm install && cd ..
           npm run build
 
-      - name: Authenticate to GCP / Firebase
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
-
-      - name: Deploy Hosting and Functions to Firebase
+      - name: Deploy to Firebase (Hosting & Functions)
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}
         run: |
+          echo "$GCP_SA_KEY" > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json
           npx firebase-tools deploy --only hosting,functions --project hctcplayer
+          rm -f gcp-key.json
