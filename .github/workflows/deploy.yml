@@ -23,17 +23,11 @@ jobs:
           cd functions && npm ci && cd ..
           npm run build
 
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Authenticate to GCP / Firebase
+        uses: google-github-actions/auth@v2
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
-          channelId: live
-          projectId: hctcplayer
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
 
-      - name: Deploy to Firebase Functions
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only functions
-        env:
-          GCP_SA_KEY: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HCTCPLAYER }}'
+      - name: Deploy Hosting and Functions to Firebase
+        run: |
+          npx firebase-tools deploy --only hosting,functions --project hctcplayer
